@@ -14,6 +14,7 @@ namespace realEstate.Common.ExternalServices
     public interface IHurriyetService
     {
        Task<List<ItemOffered>> GetAdvertsList(string url);
+        Task<ItemDetail> GetAdvertDetail(string url);
     }
 
     public class HurriyetService: IHurriyetService
@@ -23,6 +24,25 @@ namespace realEstate.Common.ExternalServices
         public HurriyetService(HttpClient httpClient)
         {
             _httpClient = httpClient;
+        }
+
+        public async Task<ItemDetail> GetAdvertDetail(string url)
+        {
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            var document = new HtmlDocument();
+            document.LoadHtml(result);
+            var script = document.DocumentNode.Descendants()
+              .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
+              ?.InnerHtml;
+            JToken token = JObject.Parse(script);
+            var itemOffered = token.SelectToken("mainEntity").ToString();
+            var itemDetail = JsonConvert.DeserializeObject<ItemDetail>(itemOffered);
+            return itemDetail;
         }
 
         public async Task<List<ItemOffered>> GetAdvertsList(string url)
@@ -50,5 +70,6 @@ namespace realEstate.Common.ExternalServices
               return itemOfferedList;
 
         }
+
     }
 }
