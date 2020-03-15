@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using realEstate.Common.ExternalServices;
+using realEstate.Common.Mongo;
 
 namespace realEstate.Worker
 {
@@ -19,6 +20,7 @@ namespace realEstate.Worker
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddMongodb(hostContext.Configuration);
                     services.AddHttpClient<IHurriyetService, HurriyetService>(client =>
                         {
                             client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
