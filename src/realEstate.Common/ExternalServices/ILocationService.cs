@@ -1,0 +1,71 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
+using realEstate.Common.ParsingModel;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
+
+namespace realEstate.Common.ExternalServices
+{
+    public interface ILocationService
+    {
+        Task<Cities> GetCities();
+        Task<Towns> GetTowns(string cityId);
+        Task<Districts> GetDistricts(string townId);
+    }
+
+    public class LocationService : ILocationService
+    {
+        private readonly HttpClient _httpClient;
+
+        public LocationService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+        //https://il-ilce-rest-api.herokuapp.com/v1/cities
+        public async Task<Cities> GetCities()
+        {
+            var response = await _httpClient.GetAsync($"cities");
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            var cities = JsonConvert.DeserializeObject<Cities>(result);
+            if (!cities.Status)
+            {
+                // todo : throw an exception
+            }
+
+            return cities;
+        }
+        public async Task<Towns> GetTowns(string cityId)
+        {
+            var response = await _httpClient.GetAsync($"cities/{cityId}/towns");
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            var towns = JsonConvert.DeserializeObject<Towns>(result);
+           
+            return towns;
+        }
+
+        public async Task<Districts> GetDistricts(string townId)
+        {
+            var response = await _httpClient.GetAsync($"towns/{townId}/districts");
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            var districts = JsonConvert.DeserializeObject<Districts>(result);
+
+            return districts;
+        }
+    }
+}

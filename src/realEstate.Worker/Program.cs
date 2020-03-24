@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using realEstate.Common.ExternalServices;
 using realEstate.Common.Mongo;
+using realEstate.Worker.Services;
 
 namespace realEstate.Worker
 {
@@ -30,6 +31,12 @@ namespace realEstate.Worker
                             client.BaseAddress = new Uri("https://www.hurriyetemlak.com/");
                         }
                         );
+                    services.AddHttpClient<ILocationService, LocationService>(client =>
+                    {
+                        client.BaseAddress = new Uri("https://il-ilce-rest-api.herokuapp.com/v1/");
+                    });
+                    services.AddSingleton<IInternalLocationService, InternalLocationService>();
+                    
                     services.AddHostedService<Worker>();
                 });
     }

@@ -11,6 +11,7 @@ using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
 using realEstate.Common.ExternalServices;
 using realEstate.Common.ParsingModel;
+using realEstate.Worker.Services;
 
 namespace realEstate.Worker
 {
@@ -19,11 +20,13 @@ namespace realEstate.Worker
         private readonly ILogger<Worker> _logger;
         private readonly IHurriyetService _hurriyetService;
         private readonly IServiceProvider _services;
-        public Worker(ILogger<Worker> logger, IHurriyetService hurriyetService, IServiceProvider services)
+        private readonly IInternalLocationService _internalLocationService;
+        public Worker(ILogger<Worker> logger, IHurriyetService hurriyetService, IServiceProvider services, IInternalLocationService internalLocationService)
         {
             _logger = logger;
             _hurriyetService = hurriyetService;
             _services = services;
+            _internalLocationService = internalLocationService;
         }
 
 
@@ -41,21 +44,16 @@ namespace realEstate.Worker
 
                     foreach (var item in response)
                     {
-                        var rentingHouseModel = new RentingHouse();
-                        rentingHouseModel.Offers = new Offers();
-
-
+                        var rentingHouseModel = new RentingHouse {Offers = new Offers()};
                         int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
                         rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
                         var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
                         rentingHouseModel.Name = item.Name;
                         rentingHouseModel.Offers = item.Offers;
                         rentingHouseModel.Description = detail.Offers.Description;
-                        rentingHouseModel.PathList=new List<string>(){"pathDenemesi"};
+                        rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
                         rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                            await rentingHouseRepository.UpsertRecord(rentingHouseModel);
-                      
-                    
+                        await rentingHouseRepository.UpsertRecord(rentingHouseModel);
                     }
                 }
 
