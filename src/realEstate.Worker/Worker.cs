@@ -30,9 +30,6 @@ namespace realEstate.Worker
             _services = services;
             _internalLocationService = internalLocationService;
         }
-
-
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -46,41 +43,42 @@ namespace realEstate.Worker
                     {
                         foreach (var town in city.Towns)
                         {
-                            foreach (var district in town.Districts)
+                            var townName = GetEnCharactersInString(town.Name.ToLower());
+                            var response = await _hurriyetService.
+                                GetAdvertsList($"{townName}-kiralik");
+
+                            foreach (var item in response)
                             {
-                                var districtName = GetEnCharactersInString(district.Name.ToLower());
 
-                                var neighborhoods = district.Neighborhoods.Select(x =>
-                                    GetEnCharactersInString(x.Substring(0, x.IndexOf("mah", StringComparison.Ordinal)).ToLower())).ToList();
-                                var query = string.Join($",", neighborhoods.Select(x => $"{districtName}-" + x));
-                                var response = await _hurriyetService.
-                                    GetAdvertsList($"{districtName}-kiralik?districts={districtName}-{query}");
+                                var locationList = new List<LocationModel>()
+                                        {
+                                            new LocationModel(){Name = city.Name,Type = "City"},
+                                            new LocationModel(){Name = town.Name,Type = "Town"},
+                                        };
 
-                                foreach (var item in response)
-                                {
-                                    var rentingHouseModel = new RentingHouse { Offers = new Offers() };
-                                    int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
-                                    rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
-                                    var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
-                                    rentingHouseModel.Name = item.Name;
-                                    rentingHouseModel.Offers = item.Offers;
-                                    rentingHouseModel.Description = detail.Offers.Description;
-                                    rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
-                                    rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                                    await rentingHouseRepository.UpsertRecord(rentingHouseModel);
-                                }
+                                var rentingHouseModel = new RentingHouse { Offers = new Offers() };
+                                int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
+                                rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
+                                var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
+                                rentingHouseModel.Name = item.Name;
+                                rentingHouseModel.Offers = item.Offers;
+                                rentingHouseModel.Description = detail.Offers.Description;
+                                rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
+                                rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
+                                locationList.Add(new LocationModel() { Type = "Street", Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress });
+                                rentingHouseModel.Locations = locationList;
+                                await rentingHouseRepository.UpsertRecord(rentingHouseModel);
                             }
+
                         }
                     }
-
 
                 }
 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(60 * 1000, stoppingToken);
+                await Task.Delay(15 * 60 * 1000, stoppingToken);
             }
         }
-
         private string GetEnCharactersInString(string text)
         {
             StringBuilder sb = new StringBuilder(text);

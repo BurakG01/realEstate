@@ -21,12 +21,7 @@ namespace realEstate.Common.Domain.Model
     public class Town
     {
         public string Name { get; set; }
-        public List<Districts> Districts { get; set; }
+    
     }
-
-    public class Districts
-    {
-        public string Name { get; set; }
-        public List<string> Neighborhoods { get; set; }
-    }
+  
 }

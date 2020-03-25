@@ -26,7 +26,7 @@ namespace realEstate.Common.ExternalServices
         {
             _httpClient = httpClient;
         }
-        //https://il-ilce-rest-api.herokuapp.com/v1/cities
+      
         public async Task<Cities> GetCities()
         {
             var response = await _httpClient.GetAsync($"cities");

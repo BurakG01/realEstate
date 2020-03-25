@@ -13,11 +13,11 @@ namespace realEstate.Common.ExternalServices
 {
     public interface IHurriyetService
     {
-       Task<List<ItemOffered>> GetAdvertsList(string url);
+        Task<List<ItemOffered>> GetAdvertsList(string url);
         Task<ItemDetail> GetAdvertDetail(string url);
     }
 
-    public class HurriyetService: IHurriyetService
+    public class HurriyetService : IHurriyetService
     {
         private readonly HttpClient _httpClient;
 
@@ -47,29 +47,41 @@ namespace realEstate.Common.ExternalServices
 
         public async Task<List<ItemOffered>> GetAdvertsList(string url)
         {
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            var finalList = new List<ItemOffered>();
+            var page = 1;
+            while (true)
             {
-                //todo : throw exception
+
+                var response = await _httpClient.GetAsync($"{url}?page={page}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    //todo : throw exception
+                }
+
+                var result = await response.Content.ReadAsStringAsync();
+                var document = new HtmlDocument();
+                document.LoadHtml(result);
+
+                var script = document.DocumentNode.Descendants()
+                    .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
+                    ?.InnerHtml;
+
+
+                JToken token = JObject.Parse(script);
+
+                var itemOffered = token.SelectToken("mainEntity.offers.itemOffered").ToString();
+                var itemOfferedList = JsonConvert.DeserializeObject<List<ItemOffered>>(itemOffered);
+                finalList.AddRange(itemOfferedList);
+                if (itemOfferedList.Count < 24)
+                {
+                    break;
+                }
+
+                page++;
+
             }
-
-            var result = await response.Content.ReadAsStringAsync();
-            var document = new HtmlDocument();
-            document.LoadHtml(result);
-
-            var script = document.DocumentNode.Descendants()
-                .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
-                ?.InnerHtml;
-
-
-              JToken token = JObject.Parse(script);
-
-              var itemOffered = token.SelectToken("mainEntity.offers.itemOffered").ToString();
-              var itemOfferedList = JsonConvert.DeserializeObject<List<ItemOffered>>(itemOffered);
-              return itemOfferedList;
-
+            return finalList;
         }
-
     }
 }

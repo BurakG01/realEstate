@@ -46,30 +46,10 @@ namespace realEstate.Worker.Services
                     {
                         var newCity = new City() { Name = city.Name, Towns = new List<Town>() };
                         var towns = await _locationService.GetTowns(city.Id);
-
-                        foreach (var townItem in towns.TownList)
+                        newCity.Towns = towns.TownList.Select(x => new Town
                         {
-                            var district = await _locationService.GetDistricts(townItem.Id);
-                            var newTown = new Town()
-                            {
-                                Name = townItem.Name,
-                                Districts = new List<Districts>()
-                            };
-                            foreach (var districtItem in district.DistrictList)
-                            {
-                                var neighborhoods = await _locationService.GetNeighborhoods(districtItem.Id);
-                                var newDistrict = new Districts()
-                                {
-                                    Name = districtItem.Name,
-                                    Neighborhoods = neighborhoods.NeighborhoodList.Select(x => x.Name).ToList()
-
-                                };
-
-                                newTown.Districts.Add(newDistrict);
-
-                            }
-                            newCity.Towns.Add(newTown);
-                        }
+                            Name = x.Name
+                        }).ToList();
                         newLocation.Cities.Add(newCity);
                     }
 
