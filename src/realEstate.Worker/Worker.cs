@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,33 +37,63 @@ namespace realEstate.Worker
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-
                 using (var scope = _services.CreateScope())
                 {
                     var rentingHouseRepository = scope.ServiceProvider.GetRequiredService<IRentingHouseRepository>();
-                    var response = await _hurriyetService.GetAdvertsList($"cukurova-kiralik?districts=cukurova-guzelyali");
 
-
-                    foreach (var item in response)
+                    var locations = await _internalLocationService.GetLocation();
+                    foreach (var city in locations.Cities)
                     {
-                        var rentingHouseModel = new RentingHouse {Offers = new Offers()};
-                        int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
-                        rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
-                        var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
-                        rentingHouseModel.Name = item.Name;
-                        rentingHouseModel.Offers = item.Offers;
-                        rentingHouseModel.Description = detail.Offers.Description;
-                        rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
-                        rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                        await rentingHouseRepository.UpsertRecord(rentingHouseModel);
+                        foreach (var town in city.Towns)
+                        {
+                            foreach (var district in town.Districts)
+                            {
+                                var districtName = GetEnCharactersInString(district.Name.ToLower());
+
+                                var neighborhoods = district.Neighborhoods.Select(x =>
+                                    GetEnCharactersInString(x.Substring(0, x.IndexOf("mah", StringComparison.Ordinal)).ToLower())).ToList();
+                                var query = string.Join($",", neighborhoods.Select(x => $"{districtName}-" + x));
+                                var response = await _hurriyetService.
+                                    GetAdvertsList($"{districtName}-kiralik?districts={districtName}-{query}");
+
+                                foreach (var item in response)
+                                {
+                                    var rentingHouseModel = new RentingHouse { Offers = new Offers() };
+                                    int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
+                                    rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
+                                    var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
+                                    rentingHouseModel.Name = item.Name;
+                                    rentingHouseModel.Offers = item.Offers;
+                                    rentingHouseModel.Description = detail.Offers.Description;
+                                    rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
+                                    rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
+                                    await rentingHouseRepository.UpsertRecord(rentingHouseModel);
+                                }
+                            }
+                        }
                     }
+
+
                 }
-
-
 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(60 * 1000, stoppingToken);
             }
+        }
+
+        private string GetEnCharactersInString(string text)
+        {
+            StringBuilder sb = new StringBuilder(text);
+
+            sb.Replace("ı", "i");
+            sb.Replace("ü", "u");
+            sb.Replace("ç", "c");
+            sb.Replace("ö", "o");
+            sb.Replace("ü", "u");
+            sb.Replace("ğ", "g");
+            sb.Replace("ş", "s");
+
+            return sb.ToString();
         }
     }
 }

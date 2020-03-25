@@ -6,7 +6,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace realEstate.Common.Domain.Model
 {
-    public class Location
+    public partial class Location
     {
         [BsonId]
         [BsonIgnoreIfDefault]
@@ -21,6 +21,12 @@ namespace realEstate.Common.Domain.Model
     public class Town
     {
         public string Name { get; set; }
-        public List<string> Districts { get; set; }
+        public List<Districts> Districts { get; set; }
+    }
+
+    public class Districts
+    {
+        public string Name { get; set; }
+        public List<string> Neighborhoods { get; set; }
     }
 }

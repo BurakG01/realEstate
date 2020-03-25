@@ -15,6 +15,7 @@ namespace realEstate.Common.ExternalServices
         Task<Cities> GetCities();
         Task<Towns> GetTowns(string cityId);
         Task<Districts> GetDistricts(string townId);
+        Task<Neighborhoods> GetNeighborhoods(string districtId);
     }
 
     public class LocationService : ILocationService
@@ -66,6 +67,19 @@ namespace realEstate.Common.ExternalServices
             var districts = JsonConvert.DeserializeObject<Districts>(result);
 
             return districts;
+        }
+
+        public async Task<Neighborhoods> GetNeighborhoods(string districtId)
+        {
+            var response = await _httpClient.GetAsync($"districts/{districtId}/neighborhoods");
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+            var result = await response.Content.ReadAsStringAsync();
+            var neighborhoods = JsonConvert.DeserializeObject<Neighborhoods>(result);
+
+            return neighborhoods;
         }
     }
 }

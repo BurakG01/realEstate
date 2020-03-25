@@ -31,7 +31,7 @@ namespace realEstate.Worker.Services
         {
             using (var scope = _services.CreateScope())
             {
-              var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
+                var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
                 var location = await locationRepository.GetAsync();
                 if (location != null)
                 {
@@ -40,26 +40,39 @@ namespace realEstate.Worker.Services
                 else
                 {
                     var cities = await _locationService.GetCities();
-                    var newLocation = new Location(){Cities = new List<City>()};
-                  
+                    var newLocation = new Location() { Cities = new List<City>() };
+
                     foreach (var city in cities.Data)
                     {
-                        var newCity=new City(){Name = city.Name, Towns = new List<Town>()};
+                        var newCity = new City() { Name = city.Name, Towns = new List<Town>() };
                         var towns = await _locationService.GetTowns(city.Id);
-                      
+
                         foreach (var townItem in towns.TownList)
                         {
                             var district = await _locationService.GetDistricts(townItem.Id);
-                            var newTown=new Town()
+                            var newTown = new Town()
                             {
                                 Name = townItem.Name,
-                                Districts = district.DistrictList.Select(x=>x.Name).ToList()
+                                Districts = new List<Districts>()
                             };
-                           newCity.Towns.Add(newTown);
+                            foreach (var districtItem in district.DistrictList)
+                            {
+                                var neighborhoods = await _locationService.GetNeighborhoods(districtItem.Id);
+                                var newDistrict = new Districts()
+                                {
+                                    Name = districtItem.Name,
+                                    Neighborhoods = neighborhoods.NeighborhoodList.Select(x => x.Name).ToList()
+
+                                };
+
+                                newTown.Districts.Add(newDistrict);
+
+                            }
+                            newCity.Towns.Add(newTown);
                         }
                         newLocation.Cities.Add(newCity);
                     }
-                   
+
                     await locationRepository.AddAsync(newLocation);
                     return newLocation;
                 }

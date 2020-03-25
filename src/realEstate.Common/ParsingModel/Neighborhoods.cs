@@ -5,20 +5,19 @@ using Newtonsoft.Json;
 
 namespace realEstate.Common.ParsingModel
 {
-    public class Districts
+    public class Neighborhoods
     {
         public bool Status { get; set; }
         [JsonProperty("Data")]
-        public List<DistrictData> DistrictList { get; set; }
+        public List<NeighborhoodData> NeighborhoodList { get; set; }
     }
-
-    public class DistrictData
+    public class NeighborhoodData
     {
         [JsonProperty("_id")]
         public string Id { get; set; }
         public string Name { get; set; }
-        public string Town{ get; set; }
-        public string City{ get; set; }
+        public string Town { get; set; }
+        public string City { get; set; }
 
     }
 }

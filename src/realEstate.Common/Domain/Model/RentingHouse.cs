@@ -21,5 +21,11 @@ namespace realEstate.Common.Domain.Model
         public List<string> Image { get; set; }
         public Offers Offers { get; set; }
         public string AdvertId { get; set; }
+        public List<Location> Locations { get; set; } 
     }
+
+   public partial class Location
+   {
+        public string Name { get; set; }
+   }
 }
