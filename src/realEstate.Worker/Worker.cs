@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
+using realEstate.Common.Enums;
 using realEstate.Common.ExternalServices;
 using realEstate.Common.ParsingModel;
 using realEstate.Worker.Services;
@@ -23,7 +24,10 @@ namespace realEstate.Worker
         private readonly IHurriyetService _hurriyetService;
         private readonly IServiceProvider _services;
         private readonly IInternalLocationService _internalLocationService;
-        public Worker(ILogger<Worker> logger, IHurriyetService hurriyetService, IServiceProvider services, IInternalLocationService internalLocationService)
+        public Worker(ILogger<Worker> logger,
+            IHurriyetService hurriyetService,
+            IServiceProvider services,
+            IInternalLocationService internalLocationService)
         {
             _logger = logger;
             _hurriyetService = hurriyetService;
@@ -46,28 +50,34 @@ namespace realEstate.Worker
                             var townName = GetEnCharactersInString(town.Name.ToLower());
                             var response = await _hurriyetService.
                                 GetAdvertsList($"{townName}-kiralik");
+                            // todo : burada db den datayi cekip apiden gelenlerin arasinda olmayanlari silcez
 
                             foreach (var item in response)
                             {
 
                                 var locationList = new List<LocationModel>()
                                         {
-                                            new LocationModel(){Name = city.Name,Type = "City"},
-                                            new LocationModel(){Name = town.Name,Type = "Town"},
+                                            new LocationModel()
+                                            {
+                                                Name = city.Name,Type = LocationType.City.ToString(),
+
+                                            },
+                                            new LocationModel(){Name = town.Name,Type = LocationType.Town.ToString()},
                                         };
 
-                                var rentingHouseModel = new RentingHouse { Offers = new Offers() };
+                                var rentListing = new RentListing { Locations = new List<LocationModel>() };
                                 int pos = item.Url.ToString().LastIndexOf("/", StringComparison.Ordinal) + 1;
-                                rentingHouseModel.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
+                                rentListing.AdvertId = item.Url.ToString().Substring(pos, item.Url.ToString().Length - pos);
                                 var detail = await _hurriyetService.GetAdvertDetail(item.Url.ToString());
-                                rentingHouseModel.Name = item.Name;
-                                rentingHouseModel.Offers = item.Offers;
-                                rentingHouseModel.Description = detail.Offers.Description;
-                                rentingHouseModel.PathList = new List<string>() { item.Url.ToString() };
-                                rentingHouseModel.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                                locationList.Add(new LocationModel() { Type = "Street", Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress });
-                                rentingHouseModel.Locations = locationList;
-                                await rentingHouseRepository.UpsertRecord(rentingHouseModel);
+                                rentListing.Name = item.Name;
+                                rentListing.ShortDescription = detail.Offers.Description;
+                                rentListing.Url = new Url() { Owner = Owners.HurriyetEmlak.ToString(), Link = item.Url.ToString() };
+                                rentListing.Image = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
+                                locationList.Add(new LocationModel() { Type = LocationType.Street.ToString(), Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress });
+                                rentListing.Locations = locationList;
+                                rentListing.Owner = Owners.HurriyetEmlak.ToString();
+                                rentListing.Price = detail.Offers.Price;
+                                await rentingHouseRepository.UpsertRecord(rentListing);
                             }
 
                         }
@@ -76,7 +86,7 @@ namespace realEstate.Worker
                 }
 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(15 * 60 * 1000, stoppingToken);
+                await Task.Delay(30 * 60 * 1000, stoppingToken);
             }
         }
         private string GetEnCharactersInString(string text)

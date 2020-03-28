@@ -43,6 +43,7 @@ namespace realEstate.Common.ExternalServices
             var itemOffered = token.SelectToken("mainEntity").ToString();
             var itemDetail = JsonConvert.DeserializeObject<ItemDetail>(itemOffered);
             return itemDetail;
+
         }
 
         public async Task<List<ItemOffered>> GetAdvertsList(string url)
@@ -77,7 +78,7 @@ namespace realEstate.Common.ExternalServices
                 {
                     break;
                 }
-
+                
                 page++;
 
             }
