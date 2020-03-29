@@ -44,10 +44,11 @@ namespace realEstate.Worker.Services
 
                     foreach (var city in cities.Data)
                     {
-                        var newCity = new City() { Name = city.Name, Towns = new List<Town>() };
+                        var newCity = new City() { Name = city.Name, Id = city.Id, Towns = new List<Town>() };
                         var towns = await _locationService.GetTowns(city.Id);
                         newCity.Towns = towns.TownList.Select(x => new Town
                         {
+                            Id = x.Id,
                             Name = x.Name
                         }).ToList();
                         newLocation.Cities.Add(newCity);

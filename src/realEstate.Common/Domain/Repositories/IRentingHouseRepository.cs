@@ -9,7 +9,7 @@ namespace realEstate.Common.Domain.Repositories
 {
     public interface IRentingHouseRepository
     {
-        Task UpsertRecord(RentListing record);
+        Task UpsertRecord(Listing record);
     }
 
     public class RentingHouseRepository : IRentingHouseRepository
@@ -22,7 +22,7 @@ namespace realEstate.Common.Domain.Repositories
         }
 
 
-        public async Task UpsertRecord(RentListing record)
+        public async Task UpsertRecord(Listing record)
         {
             await Collection.ReplaceOneAsync(
                 recordInDb => recordInDb.AdvertId.Equals(record.AdvertId),
@@ -31,7 +31,7 @@ namespace realEstate.Common.Domain.Repositories
             );
         }
 
-        private IMongoCollection<RentListing> Collection
-            => _database.GetCollection<RentListing>("RentingListings");
+        private IMongoCollection<Listing> Collection
+            => _database.GetCollection<Listing>("Listings");
     }
 }

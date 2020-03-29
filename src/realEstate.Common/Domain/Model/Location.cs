@@ -16,10 +16,12 @@ namespace realEstate.Common.Domain.Model
     public class City
     {
         public string Name { get; set; }
+        public string Id { get; set; }
         public List<Town> Towns { get; set; }
     }
     public class Town
     {
+        public string Id { get; set; }
         public string Name { get; set; }
     
     }

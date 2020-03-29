@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using realEstate.Common.ExternalServices;
 using realEstate.Common.Mongo;
 using realEstate.Worker.Services;
+using realEstate.Worker.Workers;
 
 namespace realEstate.Worker
 {
@@ -37,7 +38,7 @@ namespace realEstate.Worker
                     });
                     services.AddSingleton<IInternalLocationService, InternalLocationService>();
                     
-                    services.AddHostedService<Worker>();
+                    services.AddHostedService<HurriyetWorker>();
                 });
     }
 }

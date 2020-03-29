@@ -9,7 +9,8 @@ namespace realEstate.Common.ParsingModel
     {
         [JsonProperty("@type")]
         public string Type { get; set; }
-
+        public string FullDescription { get; set; }
+        public string FullDescriptionInHtml { get; set; }
         [JsonProperty("offers")]
         public ItemDetailOffers Offers { get; set; }
     }

@@ -6,9 +6,9 @@ namespace realEstate.Common.Enums
 {
     public enum Owners
     {
-        HurriyetEmlak,
-        Sahibinden,
-        EmlakJet,
-        Zingat
+        HurriyetEmlak=0,
+        Sahibinden=2,
+        EmlakJet=4,
+        Zingat=8
     }
 }
