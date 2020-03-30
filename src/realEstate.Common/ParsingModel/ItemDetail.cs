@@ -11,6 +11,7 @@ namespace realEstate.Common.ParsingModel
         public string Type { get; set; }
         public string FullDescription { get; set; }
         public string FullDescriptionInHtml { get; set; }
+        public  Dictionary<string,string> AdvertFeatures{ get; set; }
         [JsonProperty("offers")]
         public ItemDetailOffers Offers { get; set; }
     }
@@ -119,5 +120,8 @@ namespace realEstate.Common.ParsingModel
         [JsonProperty("address")]
         public string Address { get; set; }
     }
+
+   
+
 
 }

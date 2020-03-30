@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using realEstate.Common.ExternalServices;
+using realEstate.Common.Mapper;
 using realEstate.Common.Mongo;
 using realEstate.Worker.Services;
 using realEstate.Worker.Workers;
@@ -37,6 +38,7 @@ namespace realEstate.Worker
                         client.BaseAddress = new Uri("https://il-ilce-rest-api.herokuapp.com/v1/");
                     });
                     services.AddSingleton<IInternalLocationService, InternalLocationService>();
+                    services.AddSingleton<IListingDetailMapper, ListingDetailMapper>();
                     
                     services.AddHostedService<HurriyetWorker>();
                 });

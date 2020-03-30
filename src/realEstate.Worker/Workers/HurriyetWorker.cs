@@ -10,6 +10,7 @@ using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
 using realEstate.Common.Enums;
 using realEstate.Common.ExternalServices;
+using realEstate.Common.Mapper;
 using realEstate.Worker.Services;
 
 namespace realEstate.Worker.Workers
@@ -36,21 +37,21 @@ namespace realEstate.Worker.Workers
             {
                 using (var scope = _services.CreateScope())
                 {
-                    var deneme = await _hurriyetService.GetAdvertDetail("sd");
+
                     var rentingHouseRepository = scope.ServiceProvider.GetRequiredService<IRentingHouseRepository>();
 
                     var locations = await _internalLocationService.GetLocation();
                     foreach (var city in locations.Cities.OrderBy(x => x.Name))
                     {
-                        foreach (var town in city.Towns.OrderBy(x=>x.Name))
+                        foreach (var town in city.Towns.OrderBy(x => x.Name))
                         {
                             var townName = GetEnCharactersInString(town.Name.ToLower());
                             foreach (var advertType in AdvertTypeList.AdvertTypeDictionary)
                             {
-                               
+
                                 var response = await _hurriyetService.
                                     GetAdvertsList($"{townName}-{advertType.Value}");
-                                // todo : burada db den datayi cekip apiden gelenlerin arasinda olmayanlari silcez
+                                // todo : burada db den datayi cekip apiden gelenlerin arasinda olmayanlari silecez
                                 foreach (var item in response)
                                 {
                                     var itemUrl = item.Url.ToString();
@@ -63,11 +64,12 @@ namespace realEstate.Worker.Workers
                                         OwnerSite = (int)Owners.HurriyetEmlak,
                                         AdvertType = advertType.Key,
                                         AdvertId = GetAdvertId(itemUrl)
-                                   
+
                                     };
                                     var detail = await _hurriyetService.GetAdvertDetail(itemUrl);
 
-                                    rentListing.Description=new Description
+
+                                    rentListing.Description = new Description
                                     {
                                         ShortDescription = detail.Offers.Description,
                                         FullDescription = detail.FullDescription,
@@ -76,8 +78,20 @@ namespace realEstate.Worker.Workers
                                     };
                                     rentListing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
                                     rentListing.Street = new LocationModel() { Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress };
-                                    rentListing.Price =new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency};
-                               
+                                    rentListing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
+                                    rentListing.RoomNumber = detail.AdvertFeatures["Oda + Salon Sayısı"];
+                                    rentListing.HousingType = detail.AdvertFeatures["Konut Şekli"];
+                                    rentListing.Size = detail.AdvertFeatures["Brüt / Net M2"];
+                                    rentListing.FloorLocation = detail.AdvertFeatures["Bulunduğu Kat"];
+                                    rentListing.BuildingAge = detail.AdvertFeatures["Bina Yaşı"];
+                                    rentListing.HeatingType = detail.AdvertFeatures["Isınma Tipi"];
+                                    rentListing.NumberOfFloor = detail.AdvertFeatures["Kat Sayısı"];
+                                    rentListing.FurnishedStatus = detail.AdvertFeatures["Eşya Durumu"];
+                                    rentListing.BuildingType = detail.AdvertFeatures["Yapı Tipi"];
+                                    rentListing.FuelType = detail.AdvertFeatures["Yakıt Tipi"];
+                                    rentListing.UsingStatus = detail.AdvertFeatures["Kullanım Durumu"];
+
+
                                     await rentingHouseRepository.UpsertRecord(rentListing);
                                 }
                             }

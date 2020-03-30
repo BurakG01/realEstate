@@ -17,8 +17,19 @@ namespace realEstate.Common.Domain.Model
         public int AdvertType { get; set; }// kiralik - satilik 
         public int OwnerSite { get; set; }// ilani hangi siteden aldik
         public int AdvertiseOwner { get; set; }// emlakci - sahibinden
-        public string Name { get; set; } 
-        public string  Url { get; set; } // ilan detay linki 
+        public string Name { get; set; }
+        public string RoomNumber { get; set; }
+        public string HeatingType { get; set; }
+        public string BuildingAge { get; set; }
+        public string HousingType { get; set; }
+        public string FloorLocation { get; set; }
+        public string NumberOfFloor { get; set; }
+        public string FuelType { get; set; }
+        public string Size { get; set; }
+        public string UsingStatus { get; set; }
+        public string BuildingType { get; set; }
+        public string FurnishedStatus { get; set; }
+        public string Url { get; set; } // ilan detay linki 
         public List<string> Images { get; set; }
         public Description Description { get; set; }
         public PriceModel Price { get; set; }

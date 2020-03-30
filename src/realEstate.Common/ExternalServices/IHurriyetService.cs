@@ -29,8 +29,7 @@ namespace realEstate.Common.ExternalServices
 
         public async Task<ItemDetail> GetAdvertDetail(string url)
         {
-            //var response = await _httpClient.GetAsync(url);
-            var response = await _httpClient.GetAsync("https://www.hurriyetemlak.com/adana-cukurova-guzelyali-satilik/daire/3334-13019");
+            var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 //todo : throw exception
@@ -42,13 +41,10 @@ namespace realEstate.Common.ExternalServices
             document.LoadHtml(result);
 
             var advertDetail = document.DocumentNode.SelectNodes("//div[@class='det-title-bottom']/following::ul[1]/li");
-            var advertDetailDict = new Dictionary<string, string>();
-            foreach (var advert in advertDetail)
-            {
-                var pair = advert.Descendants("span").ToList();
-                advertDetailDict.Add(pair[0].InnerText, pair[1].InnerText);
-
-            }
+          
+        
+            var advertFeatures = advertDetail.ToDictionary(x => x.Descendants("span").First().InnerText,
+                x => x.Descendants("span").Skip(1).Select(y => y.InnerText).Aggregate((i, j) => i + "," + j));
 
             var script = document.DocumentNode.Descendants()
               .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
@@ -63,7 +59,9 @@ namespace realEstate.Common.ExternalServices
             {
                 itemDetail.FullDescription = description.FirstOrDefault().InnerText;
                 itemDetail.FullDescriptionInHtml = description.FirstOrDefault().InnerHtml;
+             
             }
+            itemDetail.AdvertFeatures = advertFeatures;
 
             return itemDetail;
 
@@ -75,7 +73,7 @@ namespace realEstate.Common.ExternalServices
             var page = 1;
             while (true)
             {
-                Thread.Sleep(5 * 1000);
+               
                 var response = await _httpClient.GetAsync($"{url}?page={page}");
 
                 if (!response.IsSuccessStatusCode)
@@ -101,6 +99,7 @@ namespace realEstate.Common.ExternalServices
                 {
                     break;
                 }
+                Thread.Sleep(5 * 1000);
 
                 page++;
 
