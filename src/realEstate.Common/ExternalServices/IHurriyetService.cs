@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using realEstate.Common.ParsingModel;
+using realEstate.Common.Domain.Model;
+using realEstate.Common.ParsingModel.Hurriyet;
 
 namespace realEstate.Common.ExternalServices
 {
@@ -42,10 +43,13 @@ namespace realEstate.Common.ExternalServices
 
             var advertDetail = document.DocumentNode.SelectNodes("//div[@class='det-title-bottom']/following::ul[1]/li");
           
-        
-            var advertFeatures = advertDetail.ToDictionary(x => x.Descendants("span").First().InnerText,
-                x => x.Descendants("span").Skip(1).Select(y => y.InnerText).Aggregate((i, j) => i + "," + j));
+            var advertFeaturesList = advertDetail.Select(x => new AdvertFeatureModel
+            {
+                Name = x.Descendants("span").First().InnerText,
+                Value = x.Descendants("span").Skip(1).Select(y => y.InnerText).Aggregate((i, j) => i + "," + j)
 
+            }).ToList();
+              
             var script = document.DocumentNode.Descendants()
               .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
               ?.InnerHtml;
@@ -61,7 +65,7 @@ namespace realEstate.Common.ExternalServices
                 itemDetail.FullDescriptionInHtml = description.FirstOrDefault().InnerHtml;
              
             }
-            itemDetail.AdvertFeatures = advertFeatures;
+            itemDetail.AdvertFeatures = advertFeaturesList;
 
             return itemDetail;
 

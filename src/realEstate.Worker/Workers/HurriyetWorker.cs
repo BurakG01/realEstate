@@ -38,7 +38,7 @@ namespace realEstate.Worker.Workers
                 using (var scope = _services.CreateScope())
                 {
 
-                    var rentingHouseRepository = scope.ServiceProvider.GetRequiredService<IRentingHouseRepository>();
+                    var listingRepository = scope.ServiceProvider.GetRequiredService<IListingRepository>();
 
                     var locations = await _internalLocationService.GetLocation();
                     foreach (var city in locations.Cities.OrderBy(x => x.Name))
@@ -51,7 +51,17 @@ namespace realEstate.Worker.Workers
 
                                 var response = await _hurriyetService.
                                     GetAdvertsList($"{townName}-{advertType.Value}");
-                                // todo : burada db den datayi cekip apiden gelenlerin arasinda olmayanlari silecez
+
+                                var listings =
+                                    await listingRepository.GetListingsByFilter(town.Id, city.Id, advertType.Key);
+                                var notExistListings =
+                                    listings.Where(x => response.All(y => GetAdvertId(y.Url.ToString()) != x.AdvertId))
+                                        .Select(x => x.Id).ToList();
+                                if (notExistListings.Any())
+                                {
+                                    await listingRepository.DeleteBulkAsync(notExistListings);
+                                }
+
                                 foreach (var item in response)
                                 {
                                     var itemUrl = item.Url.ToString();
@@ -79,20 +89,9 @@ namespace realEstate.Worker.Workers
                                     rentListing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
                                     rentListing.Street = new LocationModel() { Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress };
                                     rentListing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
-                                    rentListing.RoomNumber = detail.AdvertFeatures["Oda + Salon Sayısı"];
-                                    rentListing.HousingType = detail.AdvertFeatures["Konut Şekli"];
-                                    rentListing.Size = detail.AdvertFeatures["Brüt / Net M2"];
-                                    rentListing.FloorLocation = detail.AdvertFeatures["Bulunduğu Kat"];
-                                    rentListing.BuildingAge = detail.AdvertFeatures["Bina Yaşı"];
-                                    rentListing.HeatingType = detail.AdvertFeatures["Isınma Tipi"];
-                                    rentListing.NumberOfFloor = detail.AdvertFeatures["Kat Sayısı"];
-                                    rentListing.FurnishedStatus = detail.AdvertFeatures["Eşya Durumu"];
-                                    rentListing.BuildingType = detail.AdvertFeatures["Yapı Tipi"];
-                                    rentListing.FuelType = detail.AdvertFeatures["Yakıt Tipi"];
-                                    rentListing.UsingStatus = detail.AdvertFeatures["Kullanım Durumu"];
+                                    rentListing.AdvertFeatures = detail.AdvertFeatures;
 
-
-                                    await rentingHouseRepository.UpsertRecord(rentListing);
+                                    await listingRepository.UpsertRecord(rentListing);
                                 }
                             }
 

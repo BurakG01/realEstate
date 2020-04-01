@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Newtonsoft.Json;
+using realEstate.Common.Domain.Model;
 
-namespace realEstate.Common.ParsingModel
+namespace realEstate.Common.ParsingModel.Hurriyet
 {
     public partial class ItemDetail
     {
@@ -11,7 +11,7 @@ namespace realEstate.Common.ParsingModel
         public string Type { get; set; }
         public string FullDescription { get; set; }
         public string FullDescriptionInHtml { get; set; }
-        public  Dictionary<string,string> AdvertFeatures{ get; set; }
+        public  List<AdvertFeatureModel> AdvertFeatures{ get; set; }
         [JsonProperty("offers")]
         public ItemDetailOffers Offers { get; set; }
     }

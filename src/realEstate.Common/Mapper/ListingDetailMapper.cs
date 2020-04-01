@@ -5,6 +5,7 @@ using System.Text;
 using AutoMapper;
 using realEstate.Common.Domain.Model;
 using realEstate.Common.ParsingModel;
+using realEstate.Common.ParsingModel.Hurriyet;
 
 namespace realEstate.Common.Mapper
 {
@@ -42,8 +43,7 @@ namespace realEstate.Common.Mapper
                         }))
                     .ForMember(dst => dst.Name,
                         opt => opt.MapFrom(x=>x.Item2.Name))
-                    .ForMember(dst => dst.RoomNumber,
-                        opt => opt.MapFrom(x => x.Item1.AdvertFeatures["Oda + Salon Sayısı"]))
+
                     .ForMember(dst => dst.Url,
                         opt => opt.MapFrom(x => x.Item2.Url.ToString()))
                     .ForMember(dst => dst.Images,

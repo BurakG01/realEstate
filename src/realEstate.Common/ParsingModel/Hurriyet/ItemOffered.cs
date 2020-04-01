@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 
-namespace realEstate.Common.ParsingModel
+namespace realEstate.Common.ParsingModel.Hurriyet
 {
     public  class ItemOffered
     {

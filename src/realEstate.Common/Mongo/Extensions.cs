@@ -26,7 +26,7 @@ namespace realEstate.Common.Mongo
 
                 return client.GetDatabase(options.Value.Database);
             });
-            services.AddScoped<IRentingHouseRepository, RentingHouseRepository>();
+            services.AddScoped<IListingRepository, ListingRepository>();
             services.AddScoped<ILocationRepository, LocationRepository>();
 
         }

@@ -9,7 +9,7 @@ namespace realEstate.Common.Enums
         Rent=1,
         Sale=2
     }
-
+    
     public static class AdvertTypeList
     {
         public static Dictionary<int,string> AdvertTypeDictionary = new Dictionary<int, string>()
