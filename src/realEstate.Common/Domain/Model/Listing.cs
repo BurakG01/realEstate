@@ -26,6 +26,7 @@ namespace realEstate.Common.Domain.Model
         public string FurnitureStatus { get; set; } // Esya durumu
         public string SquareMeter { get; set; } // evin metrekaresi
         public string BuildingAge { get; set; } // bina yasi
+        public string HeatingType { get; set; }// isinma tipi
         public string Name { get; set; }
         public string Url { get; set; } // ilan detay linki 
         public List<string> Images { get; set; }
@@ -35,8 +36,7 @@ namespace realEstate.Common.Domain.Model
         public PriceModel Price { get; set; }
         public LocationModel City { get; set; }
         public LocationModel Town { get; set; }
-        public LocationModel District { get; set; }
-        public LocationModel Neighborhood { get; set; }
+        public LocationModel Street { get; set; }
     }
 
     public partial class LocationModel

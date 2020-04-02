@@ -13,6 +13,7 @@ namespace realEstate.Common.ExternalServices
     public interface IEmlakJetService
     {
         Task<List<EjListing>> GetAdvertList(string url);
+        Task<EjListingDetail> GetAdvertDetail(string url);
     }
 
     public class EmlakJetService : IEmlakJetService
@@ -23,8 +24,6 @@ namespace realEstate.Common.ExternalServices
         {
             _httpClient = httpClient;
         }
-
-
         public async Task<List<EjListing>> GetAdvertList(string url)
         {
             var finalList = new List<EjListing>();
@@ -46,19 +45,50 @@ namespace realEstate.Common.ExternalServices
                 var script = document.DocumentNode.Descendants()
                     .FirstOrDefault(n => n.Name == "script" && n.Id == "__NEXT_DATA__")
                     ?.InnerHtml;
-                JToken token = JObject.Parse(script);
+                if (script != null)
+                {
 
-                var ejListing = token.SelectToken("props.initialProps.pageProps.pageResponse.listingData.listing").ToString();
-                var listings = JsonConvert.DeserializeObject<List<EjListing>>(ejListing);
-                finalList.AddRange(listings);
-                if (listings.Count < 30)
+                    JToken token = JObject.Parse(script);
+
+                    var ejListing = token.SelectToken("props.initialProps.pageProps.pageResponse.listingData.listing").ToString();
+                    var listings = JsonConvert.DeserializeObject<List<EjListing>>(ejListing);
+                    finalList.AddRange(listings);
+                    if (listings.Count < 30)
+                    {
+                        break;
+                    }
+                    Thread.Sleep(1 * 1000);
+                    page++;
+                }
+                else
                 {
                     break;
                 }
-                Thread.Sleep(5 * 1000);
-                page++;
             }
             return finalList;
+        }
+
+        public async Task<EjListingDetail> GetAdvertDetail(string url)
+        {
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                //todo : throw exception
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            var document = new HtmlDocument();
+            document.LoadHtml(result);
+
+            var script = document.DocumentNode.Descendants()
+                .FirstOrDefault(n => n.Name == "script" && n.Id == "__NEXT_DATA__")
+                ?.InnerHtml;
+            JToken token = JObject.Parse(script);
+
+            var ejListing = token.SelectToken("props.initialProps.pageProps.pageResponse.listing").ToString();
+            var listing = JsonConvert.DeserializeObject<EjListingDetail>(ejListing);
+            return listing;
         }
     }
 }

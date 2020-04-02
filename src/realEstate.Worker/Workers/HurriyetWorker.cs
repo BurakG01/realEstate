@@ -66,7 +66,7 @@ namespace realEstate.Worker.Workers
                             foreach (var item in response)
                             {
                                 var itemUrl = item.Url.ToString();
-                                var rentListing = new Listing
+                                var listing = new Listing
                                 {
                                     City = new LocationModel { Name = city.Name, Id = city.Id },
                                     Town = new LocationModel { Name = town.Name, Id = town.Id },
@@ -77,34 +77,33 @@ namespace realEstate.Worker.Workers
 
                                 };
                                 var detail = await _hurriyetService.GetAdvertDetail(itemUrl);
-
-                                var district = GetRelatedDistrict(town, detail.Offers.ItemOfferedDetail.Address.StreetAddress);
-                                var neighborhood = district.Neighborhoods.First();
-                                rentListing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                                rentListing.District = new LocationModel() { Name = district.Name, Id = district.Id };
-                                rentListing.Neighborhood = new LocationModel() { Name = neighborhood.Name, Id = neighborhood.Id };
-                                rentListing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
-                                rentListing.ShortDescription = detail.Offers.Description;
-                                rentListing.FullDescription = detail.FullDescription;
-                                rentListing.FullDescriptionInHtml = detail.FullDescriptionInHtml;
-                                rentListing.AdvertiseOwner = GetAdvertiseOwner(detail.Offers.Seller);
-                                rentListing.AdvertiseOwnerName = detail.Offers.Seller.Name;
-                                rentListing.AdvertiseOwnerPhone = detail.Offers.Seller.Telephone;
-                                rentListing.RoomNumber =
+                                listing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
+                                listing.Street = new LocationModel() { Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress };
+                                listing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
+                                listing.ShortDescription = detail.Offers.Description;
+                                listing.FullDescription = detail.FullDescription;
+                                listing.FullDescriptionInHtml = detail.FullDescriptionInHtml;
+                                listing.AdvertiseOwner = GetAdvertiseOwner(detail.Offers.Seller);
+                                listing.AdvertiseOwnerName = detail.Offers.Seller.Name;
+                                listing.AdvertiseOwnerPhone = detail.Offers.Seller.Telephone;
+                                listing.RoomNumber =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Oda + Salon Sayısı")?.Value;
-                                rentListing.AdvertStatus =
+                                listing.AdvertStatus =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "İlan Durumu")?.Value;
-                                rentListing.SquareMeter =
+                                listing.SquareMeter =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Brüt / Net M2")?.Value;
-                                rentListing.BuildingAge =
+                                listing.BuildingAge =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bina Yaşı")?.Value;
-                                rentListing.FloorLocation =
+                                listing.FloorLocation =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bulunduğu Kat")?.Value;
-                                rentListing.NumberOfFloor =
+                                listing.NumberOfFloor =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Kat Sayısı")?.Value;
-                                rentListing.FurnitureStatus =
+                                listing.FurnitureStatus =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Eşya Durumu")?.Value;
-                                await listingRepository.UpsertRecord(rentListing);
+                                listing.HeatingType =
+                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Yakıt Tipi")?.Value;
+
+                                await listingRepository.UpsertRecord(listing);
                             }
 
                         }
@@ -153,27 +152,27 @@ namespace realEstate.Worker.Workers
 
             return advertiseOwner;
         }
-        private District GetRelatedDistrict(Town town, string streetName)
-        {
-            var returnDistrict = new District();
+        //private District GetRelatedDistrict(Town town, string streetName)
+        //{
+        //    var returnDistrict = new District();
 
-            foreach (var district in town.Districts)
-            {
-                foreach (var item in district.Neighborhoods)
-                {
-                    var substring = item.Name.Substring(0, item.Name.IndexOf("mah", StringComparison.Ordinal)).TrimEnd();
-                    if (String.Equals(substring, streetName, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        returnDistrict.Name = district.Name;
-                        returnDistrict.Id = district.Id;
-                        returnDistrict.Neighborhoods = new List<Neighborhood>() { item };
-                        break;
+        //    foreach (var district in town.Districts)
+        //    {
+        //        foreach (var item in district.Neighborhoods)
+        //        {
+        //            var substring = item.Name.Substring(0, item.Name.IndexOf("mah", StringComparison.Ordinal)).TrimEnd();
+        //            if (String.Equals(substring, streetName, StringComparison.CurrentCultureIgnoreCase))
+        //            {
+        //                returnDistrict.Name = district.Name;
+        //                returnDistrict.Id = district.Id;
+        //                returnDistrict.Neighborhoods = new List<Neighborhood>() { item };
+        //                break;
 
-                    }
-                }
+        //            }
+        //        }
 
-            }
-            return returnDistrict;
-        }
+        //    }
+        //    return returnDistrict;
+        //}
     }
 }

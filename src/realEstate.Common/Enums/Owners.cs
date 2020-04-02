@@ -11,10 +11,4 @@ namespace realEstate.Common.Enums
         EmlakJet = 4,
         Zingat = 8
     }
-
-    public enum AdvertOwner
-    {
-        Sahibinden = 0,
-        Emlakcidan = 2
-    }
 }

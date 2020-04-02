@@ -41,7 +41,7 @@ namespace realEstate.Common.InternalServices
                     var cityList = new List<City>();
                     var cities = await _locationService.GetCities();
 
-                    foreach (var city in cities.Data.OrderBy(x=>x.Name))
+                    foreach (var city in cities.Data.OrderBy(x => x.Name))
                     {
                         var newCity = new City()
                         {
@@ -51,38 +51,42 @@ namespace realEstate.Common.InternalServices
                             Towns = new List<Town>()
 
                         };
-
                         var towns = await _locationService.GetTowns(city.Id);
-
-                        foreach (var town in towns.TownList.OrderBy(x=>x.Name))
+                        newCity.Towns = towns.TownList.Select(x => new Town
                         {
-                            var newTown = new Town
-                            {
-                                Name = town.Name,
-                                Id = town.Id,
-                                Districts = new List<District>()
-                            };
-                            var districts = await _locationService.GetDistricts(town.Id);
+                            Name = x.Name,
+                            Id = x.Id
 
-                            foreach (var district in districts.DistrictList.OrderBy(x=>x.Name))
-                            {
-                                var newDistrict = new District()
-                                {
-                                    Name = district.Name,
-                                    Id = district.Id,
-                                    Neighborhoods = new List<Neighborhood>()
-                                };
-                                var neighborhoods = await _locationService.GetNeighborhoods(district.Id);
-                                newDistrict.Neighborhoods = neighborhoods.NeighborhoodList.Select(x => new Neighborhood
-                                {
-                                    Name = x.Name,
-                                    Id = x.Id
-                                }).ToList();
-                                newTown.Districts.Add(newDistrict);
-                            }
+                        }).OrderBy(x => x.Name).ToList();
+                        //foreach (var town in towns.TownList.OrderBy(x=>x.Name))
+                        //{
+                        //    var newTown = new Town
+                        //    {
+                        //        Name = town.Name,
+                        //        Id = town.Id,
+                        //        Districts = new List<District>()
+                        //    };
+                        //    var districts = await _locationService.GetDistricts(town.Id);
 
-                            newCity.Towns.Add(newTown);
-                        }
+                        //    foreach (var district in districts.DistrictList.OrderBy(x=>x.Name))
+                        //    {
+                        //        var newDistrict = new District()
+                        //        {
+                        //            Name = district.Name,
+                        //            Id = district.Id,
+                        //            Neighborhoods = new List<Neighborhood>()
+                        //        };
+                        //        var neighborhoods = await _locationService.GetNeighborhoods(district.Id);
+                        //        newDistrict.Neighborhoods = neighborhoods.NeighborhoodList.Select(x => new Neighborhood
+                        //        {
+                        //            Name = x.Name,
+                        //            Id = x.Id
+                        //        }).ToList();
+                        //        newTown.Districts.Add(newDistrict);
+                        //    }
+
+                        //    newCity.Towns.Add(newTown);
+                        //}
 
                         await locationRepository.AddAsync(newCity);
                         cityList.Add(newCity);
