@@ -14,7 +14,7 @@ namespace realEstate.Common.Domain.Repositories
     {
         Task UpsertRecord(Listing record);
         Task DeleteBulkAsync(List<ObjectId> ids);
-        Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int advertTypeId);
+        Task<List<Listing>> GetListingsByFilter(string townId, string cityId,  int owner);
     }
 
     public class ListingRepository : IListingRepository
@@ -42,13 +42,13 @@ namespace realEstate.Common.Domain.Repositories
             await Collection.DeleteManyAsync(idsFilter);
         }
 
-        public async Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int advertTypeId)
+        public async Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int owner)
         {
             var listings = await Collection
                 .FindAsync(x =>
                                 x.Town.Id == townId &&
                                 x.City.Id==cityId && 
-                                x.AdvertType == advertTypeId);
+                                x.OwnerSite== owner);
 
             return await listings.ToListAsync();
 

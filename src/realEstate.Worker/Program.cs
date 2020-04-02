@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using realEstate.Common.ExternalServices;
+using realEstate.Common.InternalServices;
 using realEstate.Common.Mapper;
 using realEstate.Common.Mongo;
-using realEstate.Worker.Services;
 using realEstate.Worker.Workers;
 
 namespace realEstate.Worker
@@ -49,8 +49,8 @@ namespace realEstate.Worker
                     services.AddSingleton<IInternalLocationService, InternalLocationService>();
                     services.AddSingleton<IListingDetailMapper, ListingDetailMapper>();
 
-                 //   services.AddHostedService<HurriyetWorker>();
-                    services.AddHostedService<EmlakJetWorker>();
+                  services.AddHostedService<HurriyetWorker>();
+                   // services.AddHostedService<EmlakJetWorker>();
                 });
     }
 }

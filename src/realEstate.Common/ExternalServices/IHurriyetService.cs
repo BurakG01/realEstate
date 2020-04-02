@@ -42,14 +42,14 @@ namespace realEstate.Common.ExternalServices
             document.LoadHtml(result);
 
             var advertDetail = document.DocumentNode.SelectNodes("//div[@class='det-title-bottom']/following::ul[1]/li");
-          
+
             var advertFeaturesList = advertDetail.Select(x => new AdvertFeatureModel
             {
                 Name = x.Descendants("span").First().InnerText,
                 Value = x.Descendants("span").Skip(1).Select(y => y.InnerText).Aggregate((i, j) => i + "," + j)
 
             }).ToList();
-              
+
             var script = document.DocumentNode.Descendants()
               .FirstOrDefault(n => n.Name == "script" && n.OuterHtml.Contains("application/ld+json"))
               ?.InnerHtml;
@@ -63,7 +63,7 @@ namespace realEstate.Common.ExternalServices
             {
                 itemDetail.FullDescription = description.FirstOrDefault().InnerText;
                 itemDetail.FullDescriptionInHtml = description.FirstOrDefault().InnerHtml;
-             
+
             }
             itemDetail.AdvertFeatures = advertFeaturesList;
 
@@ -77,7 +77,7 @@ namespace realEstate.Common.ExternalServices
             var page = 1;
             while (true)
             {
-               
+
                 var response = await _httpClient.GetAsync($"{url}?page={page}");
 
                 if (!response.IsSuccessStatusCode)
@@ -98,12 +98,13 @@ namespace realEstate.Common.ExternalServices
 
                 var itemOffered = token.SelectToken("mainEntity.offers.itemOffered").ToString();
                 var itemOfferedList = JsonConvert.DeserializeObject<List<ItemOffered>>(itemOffered);
-                finalList.AddRange(itemOfferedList);
+                var withoutProjectItemOfferedList = itemOfferedList.Where(x => !x.Url.AbsolutePath.Contains("/projeler/")).ToList();
+                finalList.AddRange(withoutProjectItemOfferedList);
                 if (itemOfferedList.Count < 24)
                 {
                     break;
                 }
-                Thread.Sleep(5 * 1000);
+                Thread.Sleep(1 * 1000);
 
                 page++;
 

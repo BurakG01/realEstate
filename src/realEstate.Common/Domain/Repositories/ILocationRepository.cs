@@ -10,10 +10,10 @@ namespace realEstate.Common.Domain.Repositories
 {
     public interface ILocationRepository
     {
-        Task AddAsync(Location location);
-        Task<Location> GetAsync();
+        Task AddAsync(City location);
+        Task<List<City>> GetAsync();
     }
-    public class LocationRepository:ILocationRepository
+    public class LocationRepository : ILocationRepository
     {
         private readonly IMongoDatabase _database;
 
@@ -22,18 +22,18 @@ namespace realEstate.Common.Domain.Repositories
             _database = database;
         }
 
-        public async Task<Location> GetAsync()
+        public async Task<List<City>> GetAsync()
         {
-        var location= await Collection.Find(_ => true).ToListAsync();
-        return location.FirstOrDefault();
+            return await Collection.Find(_ => true).ToListAsync();
+
         }
 
-        public async Task AddAsync(Location location)
+        public async Task AddAsync(City city)
         {
-            await Collection.InsertOneAsync(location);
+            await Collection.InsertOneAsync(city);
         }
 
-        private IMongoCollection<Location> Collection
-            => _database.GetCollection<Location>("Locations");
+        private IMongoCollection<City> Collection
+            => _database.GetCollection<City>("Cities");
     }
 }

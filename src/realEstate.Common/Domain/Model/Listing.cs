@@ -15,20 +15,28 @@ namespace realEstate.Common.Domain.Model
         public ObjectId Id { get; set; }
         public string AdvertId { get; set; } // cektigimiz yerden aldigimiz unique id
         public string ReSku { get; set; } // burada bizim verecegimiz unique bir id
-        public int AdvertType { get; set; }// kiralik - satilik 
+        public string AdvertStatus { get; set; }// kiralik - satilik -gunluk kiralik
         public int OwnerSite { get; set; }// ilani hangi siteden aldik
-        public int AdvertiseOwner { get; set; }// emlakci - sahibinden
-        public int AdvertiseOwnerName { get; set; }// emlakci - sahibinden
-        public int AdvertiseOwnerPhone { get; set; }// emlakci - sahibinden
+        public string AdvertiseOwner { get; set; }// emlakci - sahibinden-bankadan
+        public string AdvertiseOwnerName { get; set; }// ilan sahibinin ismi
+        public string AdvertiseOwnerPhone { get; set; }// ilan sahibinin telefonu
+        public string RoomNumber { get; set; } // oda sayisi
+        public string FloorLocation { get; set; } // bulundugu kat
+        public string NumberOfFloor { get; set; } // Kat sayisi
+        public string FurnitureStatus { get; set; } // Esya durumu
+        public string SquareMeter { get; set; } // evin metrekaresi
+        public string BuildingAge { get; set; } // bina yasi
         public string Name { get; set; }
         public string Url { get; set; } // ilan detay linki 
         public List<string> Images { get; set; }
-        public Description Description { get; set; }
+        public string ShortDescription { get; set; }
+        public string FullDescription { get; set; }
+        public string FullDescriptionInHtml { get; set; }
         public PriceModel Price { get; set; }
         public LocationModel City { get; set; }
         public LocationModel Town { get; set; }
-        public LocationModel Street { get; set; }
-        public List<AdvertFeatureModel> AdvertFeatures { get; set; }
+        public LocationModel District { get; set; }
+        public LocationModel Neighborhood { get; set; }
     }
 
     public partial class LocationModel
