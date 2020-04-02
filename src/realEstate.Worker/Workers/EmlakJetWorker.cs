@@ -81,10 +81,10 @@ namespace realEstate.Worker.Workers
                                         AdvertStatus = advertStatus.Value
 
                                     };
-
+                                   
                                     var listingDetail = await _emlakJetService.GetAdvertDetail(url);
                                     listing.Price = new PriceModel() { Price = listingDetail.PriceOrder, Currency = listingDetail.Currency };
-                                    listing.Images = listingDetail.Images;
+                                    listing.Images = listingDetail.ImagesFull.Select(x => $"https://imaj.emlakjet.com{x}").ToList();
                                     listing.Street = new LocationModel() { Name = listingDetail.Properties.Town.Name };
                                     listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
                                     listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);
