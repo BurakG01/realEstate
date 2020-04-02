@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -75,18 +76,18 @@ namespace realEstate.Worker.Workers
                                         Town = new LocationModel { Name = town.Name, Id = town.Id },
                                         Name = ejListing.Title.Tr,
                                         Url = url,
-                                        OwnerSite = (int)Owners.HurriyetEmlak,
+                                        OwnerSite = (int)Owners.EmlakJet,
                                         AdvertId = ejListing.Id.ToString(),
                                         AdvertStatus = advertStatus.Value
 
                                     };
 
                                     var listingDetail = await _emlakJetService.GetAdvertDetail(url);
-                                    listing.Price=new PriceModel(){Price = listingDetail.PriceOrder, Currency = listingDetail.Currency};
+                                    listing.Price = new PriceModel() { Price = listingDetail.PriceOrder, Currency = listingDetail.Currency };
                                     listing.Images = listingDetail.Images;
                                     listing.Street = new LocationModel() { Name = listingDetail.Properties.Town.Name };
                                     listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
-                                    listing.FullDescription = Regex.Replace(listingDetail.DescriptionMasked.Tr, "<.*?>", String.Empty);
+                                    listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);
                                     listing.AdvertiseOwner =
                                         listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Kimden")?.Value == "Emlak Ofisinden" ?
                                             "RealEstateAgent" : "Individual";
@@ -133,6 +134,28 @@ namespace realEstate.Worker.Workers
             sb.Replace("ü", "u");
             sb.Replace("ğ", "g");
             sb.Replace("ş", "s");
+
+            return sb.ToString();
+        }
+
+        private string GetClearText(string htmlContent)
+        {
+            var step1 = Regex.Replace(htmlContent, @"<[^>]+>|&nbsp;", "").Trim();
+            var step2 = Regex.Replace(step1, @"\s{2,}", " ");
+            StringBuilder sb = new StringBuilder(step2);
+
+            sb.Replace("&Ccedil;", "Ç");
+            sb.Replace("&ccedil;", "ç");
+            sb.Replace("&#286;", "Ğ");
+            sb.Replace("&#287;", "ğ");
+            sb.Replace("&#304;", "İ");
+            sb.Replace("&#305;", "ı");
+            sb.Replace("&Ouml;", "Ö");
+            sb.Replace("&#350;", "Ş");
+            sb.Replace("&#351;", "ş");
+            sb.Replace("&Uuml;", "Ü");
+            sb.Replace("&uuml;", "ü");
+            sb.Replace("&sup2;", "²");
 
             return sb.ToString();
         }
