@@ -66,44 +66,51 @@ namespace realEstate.Worker.Workers
                             foreach (var item in response)
                             {
                                 var itemUrl = item.Url.ToString();
-                                var listing = new Listing
+                                var advertId = GetAdvertId(itemUrl);
+                                var reSku = $"RE{(int)Owners.HurriyetEmlak}{advertId}";
+                                if (listings.FirstOrDefault(x => x.AdvertId.Equals(advertId)).ReSku == reSku)
                                 {
-                                    City = new LocationModel { Name = city.Name, Id = city.Id },
-                                    Town = new LocationModel { Name = town.Name, Id = town.Id },
-                                    Name = item.Name,
-                                    Url = itemUrl,
-                                    OwnerSite = (int)Owners.HurriyetEmlak,
-                                    AdvertId = GetAdvertId(itemUrl)
+                                    var listing = new Listing
+                                    {
+                                        City = new LocationModel { Name = city.Name, Id = city.Id },
+                                        Town = new LocationModel { Name = town.Name, Id = town.Id },
+                                        Name = item.Name,
+                                        Url = itemUrl,
+                                        OwnerSite = (int)Owners.HurriyetEmlak,
+                                        AdvertId = advertId,
+                                        ReSku = reSku
 
-                                };
-                                var detail = await _hurriyetService.GetAdvertDetail(itemUrl);
-                                listing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
-                                listing.Street = new LocationModel() { Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress };
-                                listing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
-                                listing.ShortDescription = detail.Offers.Description;
-                                listing.FullDescription = detail.FullDescription;
-                                listing.FullDescriptionInHtml = detail.FullDescriptionInHtml;
-                                listing.AdvertiseOwner = GetAdvertiseOwner(detail.Offers.Seller);
-                                listing.AdvertiseOwnerName = detail.Offers.Seller.Name;
-                                listing.AdvertiseOwnerPhone = detail.Offers.Seller.Telephone;
-                                listing.RoomNumber =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Oda + Salon Sayısı")?.Value;
-                                listing.AdvertStatus =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "İlan Durumu")?.Value;
-                                listing.SquareMeter =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Brüt / Net M2")?.Value;
-                                listing.BuildingAge =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bina Yaşı")?.Value;
-                                listing.FloorLocation =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bulunduğu Kat")?.Value;
-                                listing.NumberOfFloor =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Kat Sayısı")?.Value;
-                                listing.FurnitureStatus =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Eşya Durumu")?.Value;
-                                listing.HeatingType =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Yakıt Tipi")?.Value;
+                                    };
+                                    var detail = await _hurriyetService.GetAdvertDetail(itemUrl);
+                                    listing.Images = detail.Offers.Image.Select(x => x.ContentUrl.ToString()).ToList();
+                                    listing.Street = new LocationModel() { Name = detail.Offers.ItemOfferedDetail.Address.StreetAddress };
+                                    listing.Price = new PriceModel() { Price = detail.Offers.Price, Currency = detail.Offers.PriceCurrency };
+                                    listing.ShortDescription = detail.Offers.Description;
+                                    listing.FullDescription = detail.FullDescription;
+                                    listing.FullDescriptionInHtml = detail.FullDescriptionInHtml;
+                                    listing.AdvertiseOwner = GetAdvertiseOwner(detail.Offers.Seller);
+                                    listing.AdvertiseOwnerName = detail.Offers.Seller.Name;
+                                    listing.AdvertiseOwnerPhone = detail.Offers.Seller.Telephone;
+                                    listing.RoomNumber =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Oda + Salon Sayısı")?.Value;
+                                    listing.AdvertStatus =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "İlan Durumu")?.Value;
+                                    listing.SquareMeter =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Brüt / Net M2")?.Value;
+                                    listing.BuildingAge =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bina Yaşı")?.Value;
+                                    listing.FloorLocation =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bulunduğu Kat")?.Value;
+                                    listing.NumberOfFloor =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Kat Sayısı")?.Value;
+                                    listing.FurnitureStatus =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Eşya Durumu")?.Value;
+                                    listing.HeatingType =
+                                        detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Yakıt Tipi")?.Value;
 
-                                await listingRepository.UpsertRecord(listing);
+                                    await listingRepository.UpsertRecord(listing);
+                                }
+
                             }
 
                         }

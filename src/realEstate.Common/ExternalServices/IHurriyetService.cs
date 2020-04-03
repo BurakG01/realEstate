@@ -31,6 +31,7 @@ namespace realEstate.Common.ExternalServices
         public async Task<ItemDetail> GetAdvertDetail(string url)
         {
             var response = await _httpClient.GetAsync(url);
+            Thread.Sleep(1 * 1000);
             if (!response.IsSuccessStatusCode)
             {
                 //todo : throw exception

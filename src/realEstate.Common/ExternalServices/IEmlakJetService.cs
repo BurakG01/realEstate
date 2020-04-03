@@ -70,6 +70,7 @@ namespace realEstate.Common.ExternalServices
 
         public async Task<EjListingDetail> GetAdvertDetail(string url)
         {
+            Thread.Sleep(1 * 1000);
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
