@@ -68,7 +68,8 @@ namespace realEstate.Worker.Workers
                                 var itemUrl = item.Url.ToString();
                                 var advertId = GetAdvertId(itemUrl);
                                 var reSku = $"RE{(int)Owners.HurriyetEmlak}{advertId}";
-                                if (listings.FirstOrDefault(x => x.AdvertId.Equals(advertId)).ReSku == reSku)
+                                var isExistListing = listings.FirstOrDefault(x => x.AdvertId.Equals(advertId));
+                                if (isExistListing==null || isExistListing.ReSku == reSku)
                                 {
                                     var listing = new Listing
                                     {

@@ -71,8 +71,8 @@ namespace realEstate.Worker.Workers
                                 {
                                     var url = $"https://www.emlakjet.com{ejListing.Url}";
                                     var reSku = $"RE{(int)Owners.EmlakJet}{ejListing.Id}";
-                                    if (listings.FirstOrDefault(x => x.AdvertId.Equals(ejListing.Id.ToString()))
-                                        .ReSku == reSku)
+                                    var isExistListing = listings.FirstOrDefault(x => x.AdvertId.Equals(ejListing.Id.ToString()));
+                                    if (isExistListing == null || isExistListing.ReSku == reSku)
                                     {
                                         var listing = new Listing()
                                         {
