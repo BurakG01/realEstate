@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -14,7 +15,9 @@ namespace realEstate.Common.Domain.Repositories
     {
         Task UpsertRecord(Listing record);
         Task DeleteBulkAsync(List<ObjectId> ids);
-        Task<List<Listing>> GetListingsByFilter(string townId, string cityId,  int owner);
+        // todo : query icin bunu kullanalim. alttakini silelim
+        IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate);
+        Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int owner);
     }
 
     public class ListingRepository : IListingRepository
@@ -47,10 +50,15 @@ namespace realEstate.Common.Domain.Repositories
             var listings = await Collection
                 .FindAsync(x =>
                                 x.Town.Id == townId &&
-                                x.City.Id==cityId && 
-                                x.OwnerSite== owner);
+                                x.City.Id == cityId &&
+                                x.OwnerSite == owner);
 
             return await listings.ToListAsync();
+        }
+
+        public IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate)
+        {
+            return Collection.AsQueryable().Where(predicate);
 
         }
 
