@@ -56,12 +56,10 @@ namespace realEstate.Common.Domain.Repositories
             return await listings.ToListAsync();
         }
 
-        public IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate)
+        public  IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate)
         {
-            return Collection.AsQueryable().Where(predicate);
-
+            return  Collection.AsQueryable().Where(predicate);
         }
-
 
         private IMongoCollection<Listing> Collection
             => _database.GetCollection<Listing>("Listings");

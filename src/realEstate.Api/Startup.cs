@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using realEstate.Common.Mapper;
+using realEstate.Common.Mongo;
 
 namespace realEstate.Api
 {
@@ -25,6 +27,8 @@ namespace realEstate.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMongodb(Configuration);
+            services.AddScoped<IListingRepresentationMapper, ListingRepresentationMapper>();
             services.AddControllers();
         }
 
@@ -35,6 +39,11 @@ namespace realEstate.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors(
+                builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
 
             app.UseHttpsRedirection();
 
