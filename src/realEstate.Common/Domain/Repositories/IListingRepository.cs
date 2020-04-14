@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace realEstate.Common.Domain.Repositories
         Task DeleteBulkAsync(List<ObjectId> ids);
         // todo : query icin bunu kullanalim. alttakini silelim
         IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate);
+
+        Task InsertListing(Listing listing);
         Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int owner);
     }
 
@@ -39,6 +42,11 @@ namespace realEstate.Common.Domain.Repositories
             );
         }
 
+        public async Task InsertListing(Listing listing)
+        {
+            await Collection.InsertOneAsync(listing);
+        }
+
         public async Task DeleteBulkAsync(List<ObjectId> ids)
         {
             var idsFilter = Builders<Listing>.Filter.In(d => d.Id, ids);
@@ -52,13 +60,12 @@ namespace realEstate.Common.Domain.Repositories
                                 x.Town.Id == townId &&
                                 x.City.Id == cityId &&
                                 x.OwnerSite == owner);
-
             return await listings.ToListAsync();
         }
 
-        public  IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate)
+        public IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate)
         {
-            return  Collection.AsQueryable().Where(predicate);
+            return Collection.AsQueryable().Where(predicate);
         }
 
         private IMongoCollection<Listing> Collection

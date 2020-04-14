@@ -29,13 +29,24 @@ namespace realEstate.Api.Controllers
         }
 
         [HttpGet("get-top")]
-        public async Task<List<ListingRepresentation>> GetTopTenListing()
+        public async Task<List<dynamic>> GetTopTenListing()
         {
             var listings = await _listingRepository
                  .GetByFilter(x => !string.IsNullOrEmpty(x.AdvertId))
                  .Take(10)
                  .ToListAsync();
-            var listingRepresentation = listings.Select(x => _listingMapper.MapListing(x)).ToList();
+            var listingRepresentation = listings.Select(x => _listingMapper.MapListing(x))
+                .GroupBy(x => x.ReSku).Select(x =>
+                    new
+                    {
+                        key = x.Key,
+                        owners = x.Select(y => new {ownerName= y.OwnerSite ,Url=y.Url}).ToList(),
+                        Listing = x.First()
+                    }
+
+                ).ToList<dynamic>();
+                
+
             return listingRepresentation;
 
         }
