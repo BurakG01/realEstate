@@ -40,19 +40,19 @@ namespace realEstate.Api.Controllers
                     new
                     {
                         key = x.Key,
-                        owners = x.Select(y => new {ownerName= y.OwnerSite ,Url=y.Url}).ToList(),
+                        owners = x.Select(y => new { ownerName = y.OwnerSite, Url = y.Url }).ToList(),
                         Listing = x.First()
                     }
 
                 ).ToList<dynamic>();
-                
+
 
             return listingRepresentation;
 
         }
 
         [HttpPost("filterable")]
-        public async Task<List<ListingRepresentation>> GetFilteredListing([FromBody] ListingFilter filter)
+        public async Task<List<dynamic>> GetFilteredListing([FromBody] ListingFilter filter)
         {
             var listings = _listingRepository.GetByFilter(x => !string.IsNullOrEmpty(x.AdvertId));
 
@@ -69,9 +69,47 @@ namespace realEstate.Api.Controllers
                 listings = listings.Where(x => x.Street.Name == filter.Street);
             }
 
+            if (filter.RoomNumber.Any())
+            {
+                listings = listings.Where(x => filter.RoomNumber.Any(y => x.RoomNumber == y));
+            }
+
+            if (!string.IsNullOrEmpty(filter.AdvertStatus))
+            {
+                if (filter.AdvertStatus == "Kiralık")
+                {
+                    listings = listings.Where(x => x.AdvertStatus == filter.AdvertStatus || x.AdvertStatus == "Günlük Kiralık");
+                }
+                else
+                {
+                    listings = listings.Where(x => x.AdvertStatus == filter.AdvertStatus);
+                }
+
+            }
+            if (!string.IsNullOrEmpty(filter.FurnitureType))
+            {
+                listings = listings.Where(x => x.FurnitureStatus == filter.FurnitureType);
+            }
+            if (!string.IsNullOrEmpty(filter.AdvertOwnerType))
+            {
+                listings = listings.Where(x => x.AdvertOwnerType == filter.AdvertOwnerType);
+            }
+
+            listings = listings.Skip(filter.PageNumber * 20).Take(20);
+
             var filteredListing = await listings.ToListAsync();
 
-            return filteredListing.Select(x => _listingMapper.MapListing(x)).ToList();
+            var listingRepresentation = filteredListing.Select(x => _listingMapper.MapListing(x))
+                .GroupBy(x => x.ReSku).Select(x =>
+                    new
+                    {
+                        key = x.Key,
+                        owners = x.Select(y => new { ownerName = y.OwnerSite, Url = y.Url }).ToList(),
+                        Listing = x.First()
+                    }
+
+                ).ToList<dynamic>();
+            return listingRepresentation;
         }
 
     }

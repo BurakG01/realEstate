@@ -11,9 +11,9 @@ namespace realEstate.Common.Representation
         public string ReSku { get; set; } // burada bizim verecegimiz unique bir id
         public string AdvertStatus { get; set; }// kiralik - satilik -gunluk kiralik
         public string OwnerSite { get; set; }// ilani hangi siteden aldik
-        public string AdvertiseOwner { get; set; }// emlakci - sahibinden-bankadan
-        public string AdvertiseOwnerName { get; set; }// ilan sahibinin ismi
-        public string AdvertiseOwnerPhone { get; set; }// ilan sahibinin telefonu
+        public string AdvertOwnerType { get; set; }// emlakci - sahibinden-bankadan
+        public string AdvertOwnerName { get; set; }// ilan sahibinin ismi
+        public string AdvertOwnerPhone { get; set; }
         public string RoomNumber { get; set; } // oda sayisi
         public string FloorLocation { get; set; } // bulundugu kat
         public string NumberOfFloor { get; set; } // Kat sayisi

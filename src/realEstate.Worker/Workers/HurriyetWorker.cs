@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -16,6 +17,7 @@ using realEstate.Common.ExternalServices;
 using realEstate.Common.InternalServices;
 using realEstate.Common.Mapper;
 using realEstate.Common.ParsingModel.Hurriyet;
+
 
 namespace realEstate.Worker.Workers
 {
@@ -96,9 +98,19 @@ namespace realEstate.Worker.Workers
                                 listing.ShortDescription = detail.Offers.Description;
                                 listing.FullDescription = detail.FullDescription;
                                 listing.FullDescriptionInHtml = detail.FullDescriptionInHtml;
-                                listing.AdvertiseOwner = GetAdvertiseOwner(detail.Offers.Seller);
-                                listing.AdvertiseOwnerName = detail.Offers.Seller.Name;
-                                listing.AdvertiseOwnerPhone = detail.Offers.Seller.Telephone;
+                                listing.AdvertOwnerType = GetAdvertiseOwner(detail.Offers.Seller);
+                                listing.AdvertOwnerName = detail.Offers.Seller.Name;
+                                listing.AdvertOwnerPhone = detail.Offers.Seller.Telephone;
+
+                                var furnitureStatus =
+                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Eşya Durumu")?.Value;
+
+                                if (!string.IsNullOrEmpty(furnitureStatus))
+                                {
+                                    listing.FurnitureStatus =
+                                        furnitureStatus == "Eşyalı Değil" ? "Boş" : furnitureStatus;
+                                }
+
                                 listing.RoomNumber =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Oda + Salon Sayısı")?.Value;
                                 listing.AdvertStatus =
@@ -111,13 +123,11 @@ namespace realEstate.Worker.Workers
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Bulunduğu Kat")?.Value;
                                 listing.NumberOfFloor =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Kat Sayısı")?.Value;
-                                listing.FurnitureStatus =
-                                    detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Eşya Durumu")?.Value;
+
                                 listing.HeatingType =
                                     detail.AdvertFeatures.FirstOrDefault(x => x.Name == "Yakıt Tipi")?.Value;
 
-                                await listingRepository.UpsertRecord(listing);
-
+                                await listingRepository.InsertListing(listing);
 
                             }
 
@@ -151,20 +161,39 @@ namespace realEstate.Worker.Workers
         }
         private string GetAdvertiseOwner(Seller seller)
         {
+            string originalCulture = CultureInfo.CurrentCulture.Name;
             string advertiseOwner;
-            if (seller.Name.IndexOf("bank", StringComparison.CurrentCultureIgnoreCase) > 0)
+            var otherNames= new List<string>()
             {
-                advertiseOwner = "Bank";
-            }
-            else if (seller.Name.IndexOf("emlak", StringComparison.CurrentCultureIgnoreCase) > 0)
+                "a.ş",
+                "bank",
+                "ltd",
+                "grup",
+                "HOLDİNG",
+                "AŞ.",
+                "İNŞAAT",
+                "Gayrimenkul",
+                "YAPI",
+                "GROUP",
+                "MÜHENDİSLİK", 
+                "LTD",
+                "ŞTİ"
+            };
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("TR-tr");
+            if (seller.Name.IndexOf("emlak", StringComparison.CurrentCultureIgnoreCase) > 0)
             {
                 advertiseOwner = "RealEstateAgent";
             }
+            else if (otherNames.Any(x=> seller.Name.IndexOf(x, StringComparison.CurrentCultureIgnoreCase) > 0))
+            {
+                advertiseOwner = "Other";
+            }
             else
             {
-                advertiseOwner = "Individual";
+                advertiseOwner = "Personal";
             }
-
+         
+            Thread.CurrentThread.CurrentCulture = new CultureInfo(originalCulture);
             return advertiseOwner;
         }
         //private District GetRelatedDistrict(Town town, string streetName)

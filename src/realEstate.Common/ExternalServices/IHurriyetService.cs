@@ -99,7 +99,7 @@ namespace realEstate.Common.ExternalServices
 
                 var itemOffered = token.SelectToken("mainEntity.offers.itemOffered").ToString();
                 var itemOfferedList = JsonConvert.DeserializeObject<List<ItemOffered>>(itemOffered);
-                var withoutProjectItemOfferedList = itemOfferedList.Where(x => !x.Url.AbsolutePath.Contains("/projeler/")).ToList();
+                var withoutProjectItemOfferedList = itemOfferedList.Where(x => !x.Url.AbsolutePath.Contains("/projeler/") && !x.Url.AbsolutePath.Contains("/tarla/")).ToList();
                 finalList.AddRange(withoutProjectItemOfferedList);
                 if (itemOfferedList.Count < 24)
                 {

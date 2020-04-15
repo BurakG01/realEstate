@@ -103,13 +103,29 @@ namespace realEstate.Worker.Workers
                                     {
                                         Name = listingDetail.Properties.Town.Name.Substring(0, listingDetail.Properties.Town.Name.IndexOf("Mah", StringComparison.Ordinal)).TrimEnd()
                                     };
+                                    var ownerType = listingDetail.OrderedProperties
+                                        .FirstOrDefault(x => x.Title == "Kimden")?.Value;
+
+                                    if (!string.IsNullOrEmpty(ownerType))
+                                    {
+                                        if (ownerType == "Emlak Ofisinden")
+                                        {
+                                            listing.AdvertOwnerType = "RealEstateAgent";
+                                        }
+                                        else if(ownerType == "Sahibinden")
+                                        {
+                                            listing.AdvertOwnerType = "Personal";
+                                        }
+                                        else
+                                        {
+                                            listing.AdvertOwnerType = "Other";
+                                        }
+                                       
+                                    }
                                     listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
                                     listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);
-                                    listing.AdvertiseOwner =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Kimden")?.Value == "Emlak Ofisinden" ?
-                                            "RealEstateAgent" : "Individual";
-                                    listing.AdvertiseOwnerName = listingDetail.User.FullName;
-                                    listing.AdvertiseOwnerPhone = listingDetail.PhoneNumber;
+                                    listing.AdvertOwnerName = listingDetail.User.FullName;
+                                    listing.AdvertOwnerPhone = listingDetail.PhoneNumber;
                                     listing.RoomNumber =
                                         listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Oda Sayısı")?.Value;
 
