@@ -50,7 +50,7 @@ namespace realEstate.Worker
                     services.AddSingleton<IListingDetailMapper, ListingDetailMapper>();
 
                     services.AddHostedService<HurriyetWorker>();
-                    //services.AddHostedService<EmlakJetWorker>();
+                    services.AddHostedService<EmlakJetWorker>();
                 });
     }
 }

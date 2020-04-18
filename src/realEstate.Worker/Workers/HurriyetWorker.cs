@@ -44,7 +44,6 @@ namespace realEstate.Worker.Workers
                 using (var scope = _services.CreateScope())
                 {
                     var listingRepository = scope.ServiceProvider.GetRequiredService<IListingRepository>();
-
                     var cities = await _internalLocationService.GetCities();
                     foreach (var city in cities)
                     {
@@ -203,7 +202,7 @@ namespace realEstate.Worker.Workers
                 "ŞTİ"
             };
             Thread.CurrentThread.CurrentCulture = new CultureInfo("TR-tr");
-            if (seller.Name.IndexOf("emlak", StringComparison.CurrentCultureIgnoreCase) > 0)
+            if (seller.Name.IndexOf("emlak", StringComparison.CurrentCultureIgnoreCase) > -1)
             {
                 advertiseOwner = "RealEstateAgent";
             }
