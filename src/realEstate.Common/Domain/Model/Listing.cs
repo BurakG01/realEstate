@@ -47,7 +47,7 @@ namespace realEstate.Common.Domain.Model
 
     public partial class PriceModel
     {
-        public long Price { get; set; }
+        public string Price { get; set; }
         public string Currency { get; set; }
 
     }

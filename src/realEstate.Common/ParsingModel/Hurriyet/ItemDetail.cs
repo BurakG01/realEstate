@@ -11,6 +11,7 @@ namespace realEstate.Common.ParsingModel.Hurriyet
         public string Type { get; set; }
         public string FullDescription { get; set; }
         public string FullDescriptionInHtml { get; set; }
+        public bool IsPersonal { get; set; }
         public  List<AdvertFeatureModel> AdvertFeatures{ get; set; }
         [JsonProperty("offers")]
         public ItemDetailOffers Offers { get; set; }
@@ -28,7 +29,7 @@ namespace realEstate.Common.ParsingModel.Hurriyet
         public string Description { get; set; }
 
         [JsonProperty("price")]
-        public long Price { get; set; }
+        public string Price { get; set; }
 
         [JsonProperty("priceCurrency")]
         public string PriceCurrency { get; set; }

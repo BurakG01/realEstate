@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace realEstate.Common.ParsingModel.Hurriyet
 {
-    public  class ItemOffered
+    public class ItemOffered
     {
         [JsonProperty("@type")]
         public Uri[] Type { get; set; }
@@ -27,7 +27,7 @@ namespace realEstate.Common.ParsingModel.Hurriyet
         public Offers Offers { get; set; }
     }
 
-    public  class Address
+    public class Address
     {
         [JsonProperty("@type")]
         public string Type { get; set; }
@@ -45,7 +45,7 @@ namespace realEstate.Common.ParsingModel.Hurriyet
         public string AddressCountry { get; set; }
     }
 
-    public  class Offers
+    public class Offers
     {
         [JsonProperty("BusinessFunction")]
         public Uri BusinessFunction { get; set; }
@@ -54,7 +54,7 @@ namespace realEstate.Common.ParsingModel.Hurriyet
         public Uri Availability { get; set; }
 
         [JsonProperty("price")]
-        public long Price { get; set; }
+        public string Price { get; set; }
 
         [JsonProperty("priceCurrency")]
         public string PriceCurrency { get; set; }

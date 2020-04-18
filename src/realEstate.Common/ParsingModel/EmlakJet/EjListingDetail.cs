@@ -19,7 +19,7 @@ namespace realEstate.Common.ParsingModel.EmlakJet
         public string Currency { get; set; }
 
         [JsonProperty("price_order")]
-        public long PriceOrder { get; set; }
+        public string PriceOrder { get; set; }
 
         [JsonProperty("cover_photo")]
         public string CoverPhoto { get; set; }

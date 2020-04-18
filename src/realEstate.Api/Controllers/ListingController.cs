@@ -60,13 +60,13 @@ namespace realEstate.Api.Controllers
             {
                 listings = listings.Where(x => x.City.Name == filter.City);
             }
-            if (!string.IsNullOrEmpty(filter.Town))
+            if (filter.Towns.Any())
             {
-                listings = listings.Where(x => x.Town.Name == filter.Town);
+                listings = listings.Where(x => filter.Towns.Contains(x.Town.Name));
             }
-            if (!string.IsNullOrEmpty(filter.Street))
+            if (filter.Streets.Any())
             {
-                listings = listings.Where(x => x.Street.Name == filter.Street);
+                listings = listings.Where(x => filter.Streets.Contains(x.Street.Name));
             }
 
             if (filter.RoomNumber.Any())
@@ -76,14 +76,8 @@ namespace realEstate.Api.Controllers
 
             if (!string.IsNullOrEmpty(filter.AdvertStatus))
             {
-                if (filter.AdvertStatus == "Kiralık")
-                {
-                    listings = listings.Where(x => x.AdvertStatus == filter.AdvertStatus || x.AdvertStatus == "Günlük Kiralık");
-                }
-                else
-                {
-                    listings = listings.Where(x => x.AdvertStatus == filter.AdvertStatus);
-                }
+
+                listings = listings.Where(x => x.AdvertStatus == filter.AdvertStatus);
 
             }
             if (!string.IsNullOrEmpty(filter.FurnitureType))

@@ -112,7 +112,7 @@ namespace realEstate.Worker.Workers
                                         {
                                             listing.AdvertOwnerType = "RealEstateAgent";
                                         }
-                                        else if(ownerType == "Sahibinden")
+                                        else if (ownerType == "Sahibinden")
                                         {
                                             listing.AdvertOwnerType = "Personal";
                                         }
@@ -120,7 +120,7 @@ namespace realEstate.Worker.Workers
                                         {
                                             listing.AdvertOwnerType = "Other";
                                         }
-                                       
+
                                     }
                                     listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
                                     listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);

@@ -43,6 +43,8 @@ namespace realEstate.Common.ExternalServices
             document.LoadHtml(result);
 
             var advertDetail = document.DocumentNode.SelectNodes("//div[@class='det-title-bottom']/following::ul[1]/li");
+            var isPersonal = document.DocumentNode.SelectSingleNode("//span[@class='owner-member-type mr10']")?.InnerText == "Sahibinden İlan";
+
 
             var advertFeaturesList = advertDetail.Select(x => new AdvertFeatureModel
             {
@@ -67,6 +69,7 @@ namespace realEstate.Common.ExternalServices
 
             }
             itemDetail.AdvertFeatures = advertFeaturesList;
+            itemDetail.IsPersonal = isPersonal;
 
             return itemDetail;
 
