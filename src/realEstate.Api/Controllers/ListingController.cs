@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using realEstate.Api.FilterModel;
+using realEstate.Api.ResponseModels;
 using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
 using realEstate.Common.Enums;
@@ -52,7 +53,7 @@ namespace realEstate.Api.Controllers
         }
 
         [HttpPost("filterable")]
-        public async Task<List<dynamic>> GetFilteredListing([FromBody] ListingFilter filter)
+        public async Task<ListingsResponse> GetFilteredListing([FromBody] ListingFilter filter)
         {
             var listings = _listingRepository.GetByFilter(x => !string.IsNullOrEmpty(x.AdvertId));
 
@@ -60,16 +61,16 @@ namespace realEstate.Api.Controllers
             {
                 listings = listings.Where(x => x.City.Name == filter.City);
             }
-            if (filter.Towns.Any())
+            if (filter.Towns != null && filter.Towns.Any())
             {
                 listings = listings.Where(x => filter.Towns.Contains(x.Town.Name));
             }
-            if (filter.Streets.Any())
+            if (filter.Streets != null && filter.Streets.Any())
             {
                 listings = listings.Where(x => filter.Streets.Contains(x.Street.Name));
             }
 
-            if (filter.RoomNumber.Any())
+            if (filter.RoomNumber != null && filter.RoomNumber.Any())
             {
                 listings = listings.Where(x => filter.RoomNumber.Any(y => x.RoomNumber == y));
             }
@@ -89,6 +90,8 @@ namespace realEstate.Api.Controllers
                 listings = listings.Where(x => x.AdvertOwnerType == filter.AdvertOwnerType);
             }
 
+            var totalPage = Math.Ceiling((double)listings.Count() / 20);
+
             listings = listings.Skip(filter.PageNumber * 20).Take(20);
 
             var filteredListing = await listings.ToListAsync();
@@ -103,7 +106,11 @@ namespace realEstate.Api.Controllers
                     }
 
                 ).ToList<dynamic>();
-            return listingRepresentation;
+            return new ListingsResponse
+            {
+                TotalPage =(int)totalPage,
+                Listings = listingRepresentation
+            };
         }
 
     }

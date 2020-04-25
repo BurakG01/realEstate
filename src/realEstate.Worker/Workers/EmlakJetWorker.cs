@@ -55,98 +55,114 @@ namespace realEstate.Worker.Workers
                             var townName = GetEnCharactersInString(town.Name.ToLower());
                             foreach (var advertStatus in advertStatuses)
                             {
-                                var advertList =
-                                    await _emlakJetService.GetAdvertList($"{advertStatus.Key}-konut/{cityName}-{townName}");
-
-                                var listings =
-                                    await listingRepository.GetByFilter(x =>
-                                            x.AdvertStatus == advertStatus.Value &&
-                                            x.City.Name == city.Name &&
-                                            x.Town.Name == town.Name &&
-                                            x.OwnerSite == (int)Owners.EmlakJet)
-                                        .ToListAsync(cancellationToken: stoppingToken);
-
-                                var notExistListings =
-                                    listings.Where(x => advertList.All(y => y.Id.ToString() != x.AdvertId))
-                                        .Select(x => x.Id).ToList();
-
-                                if (notExistListings.Any())
+                                try
                                 {
-                                    await listingRepository.DeleteBulkAsync(notExistListings);
-                                }
+                                    var advertList =
+                                        await _emlakJetService.GetAdvertList($"{advertStatus.Key}-konut/{cityName}-{townName}");
 
-                                var newAdverts = advertList.Where(x => listings.All(y => y.AdvertId != x.Id.ToString()))
-                                    .ToList();
+                                    var listings =
+                                        await listingRepository.GetByFilter(x =>
+                                                x.AdvertStatus == advertStatus.Value &&
+                                                x.City.Name == city.Name &&
+                                                x.Town.Name == town.Name &&
+                                                x.OwnerSite == (int)Owners.EmlakJet)
+                                            .ToListAsync(cancellationToken: stoppingToken);
 
-                                foreach (var ejListing in newAdverts)
-                                {
-                                    var url = $"https://www.emlakjet.com{ejListing.Url}";
-                                    var reSku = $"RE{(int)Owners.EmlakJet}{ejListing.Id}";
+                                    var notExistListings =
+                                        listings.Where(x => advertList.All(y => y.Id.ToString() != x.AdvertId))
+                                            .Select(x => x.Id).ToList();
 
-                                    var listing = new Listing()
+                                    if (notExistListings.Any())
                                     {
-                                        City = new LocationModel { Name = city.Name, Id = city.Id },
-                                        Town = new LocationModel { Name = town.Name, Id = town.Id },
-                                        Name = ejListing.Title.Tr,
-                                        Url = url,
-                                        OwnerSite = (int)Owners.EmlakJet,
-                                        AdvertId = ejListing.Id.ToString(),
-                                        AdvertStatus = advertStatus.Value,
-                                        ReSku = reSku
-                                    };
+                                        await listingRepository.DeleteBulkAsync(notExistListings);
+                                    }
 
-                                    var listingDetail = await _emlakJetService.GetAdvertDetail(url);
+                                    var newAdverts = advertList.Where(x => listings.All(y => y.AdvertId != x.Id.ToString()))
+                                        .ToList();
 
-                                    listing.Price = new PriceModel() { Price = listingDetail.PriceOrder, Currency = listingDetail.Currency };
-                                    listing.Images = listingDetail.ImagesFull.Select(x => $"https://imaj.emlakjet.com{x}").ToList();
-                                    listing.Street = new LocationModel()
+                                    foreach (var ejListing in newAdverts)
                                     {
-                                        Name = listingDetail.Properties.Town.Name.Substring(0, listingDetail.Properties.Town.Name.IndexOf("Mah", StringComparison.Ordinal)).TrimEnd()
-                                    };
-                                    var ownerType = listingDetail.OrderedProperties
-                                        .FirstOrDefault(x => x.Title == "Kimden")?.Value;
+                                        try
+                                        {
+                                            var url = $"https://www.emlakjet.com{ejListing.Url}";
+                                            var reSku = $"RE{(int)Owners.EmlakJet}{ejListing.Id}";
 
-                                    if (!string.IsNullOrEmpty(ownerType))
-                                    {
-                                        if (ownerType == "Emlak Ofisinden")
-                                        {
-                                            listing.AdvertOwnerType = "RealEstateAgent";
+                                            var listing = new Listing()
+                                            {
+                                                City = new LocationModel { Name = city.Name, Id = city.Id },
+                                                Town = new LocationModel { Name = town.Name, Id = town.Id },
+                                                Name = ejListing.Title.Tr,
+                                                Url = url,
+                                                OwnerSite = (int)Owners.EmlakJet,
+                                                AdvertId = ejListing.Id.ToString(),
+                                                AdvertStatus = advertStatus.Value,
+                                                ReSku = reSku
+                                            };
+
+                                            var listingDetail = await _emlakJetService.GetAdvertDetail(url);
+
+                                            listing.Price = new PriceModel() { Price = listingDetail.PriceOrder, Currency = listingDetail.Currency };
+                                            listing.Images = listingDetail.ImagesFull.Select(x => $"https://imaj.emlakjet.com{x}").ToList();
+                                            listing.Street = new LocationModel()
+                                            {
+                                                Name = listingDetail.Properties.Town.Name.Substring(0, listingDetail.Properties.Town.Name.IndexOf("Mah", StringComparison.Ordinal)).TrimEnd()
+                                            };
+                                            var ownerType = listingDetail.OrderedProperties
+                                                .FirstOrDefault(x => x.Title == "Kimden")?.Value;
+
+                                            if (!string.IsNullOrEmpty(ownerType))
+                                            {
+                                                if (ownerType == "Emlak Ofisinden")
+                                                {
+                                                    listing.AdvertOwnerType = "RealEstateAgent";
+                                                }
+                                                else if (ownerType == "Sahibinden")
+                                                {
+                                                    listing.AdvertOwnerType = "Personal";
+                                                }
+                                                else
+                                                {
+                                                    listing.AdvertOwnerType = "Other";
+                                                }
+
+                                            }
+                                            listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
+                                            listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);
+                                            listing.AdvertOwnerName = listingDetail.User.FullName;
+                                            listing.AdvertOwnerPhone = listingDetail.PhoneNumber;
+                                            listing.RoomNumber =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Oda Sayısı")?.Value;
+
+                                            listing.SquareMeter =
+                                                $"{listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Brüt m2")?.Value} / " +
+                                                $"{listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Net m2")?.Value}";
+
+                                            listing.BuildingAge =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Bina Yaşı")?.Value;
+                                            listing.FloorLocation =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Bulunduğu Kat")?.Value;
+                                            listing.NumberOfFloor =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Kat Sayısı")?.Value;
+                                            listing.FurnitureStatus =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Eşya Durumu")?.Value;
+                                            listing.HeatingType =
+                                                listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Isıtma")?.Value;
+
+                                            await listingRepository.InsertListing(listing);
                                         }
-                                        else if (ownerType == "Sahibinden")
+                                        catch (Exception e)
                                         {
-                                            listing.AdvertOwnerType = "Personal";
+                                            Console.WriteLine(e);
+                                           
                                         }
-                                        else
-                                        {
-                                            listing.AdvertOwnerType = "Other";
-                                        }
+
 
                                     }
-                                    listing.FullDescriptionInHtml = listingDetail.DescriptionMasked.Tr;
-                                    listing.FullDescription = GetClearText(listingDetail.DescriptionMasked.Tr);
-                                    listing.AdvertOwnerName = listingDetail.User.FullName;
-                                    listing.AdvertOwnerPhone = listingDetail.PhoneNumber;
-                                    listing.RoomNumber =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Oda Sayısı")?.Value;
-
-                                    listing.SquareMeter =
-                                      $"{listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Brüt m2")?.Value} / " +
-                                      $"{listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Net m2")?.Value}";
-
-                                    listing.BuildingAge =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Bina Yaşı")?.Value;
-                                    listing.FloorLocation =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Bulunduğu Kat")?.Value;
-                                    listing.NumberOfFloor =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Kat Sayısı")?.Value;
-                                    listing.FurnitureStatus =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Eşya Durumu")?.Value;
-                                    listing.HeatingType =
-                                        listingDetail.OrderedProperties.FirstOrDefault(x => x.Title == "Isıtma")?.Value;
-
-                                    await listingRepository.InsertListing(listing);
-
-
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(e);
+                                
                                 }
 
                             }
