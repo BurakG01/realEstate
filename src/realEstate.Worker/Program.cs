@@ -49,7 +49,7 @@ namespace realEstate.Worker
                     services.AddSingleton<IInternalLocationService, InternalLocationService>();
                     services.AddSingleton<IListingDetailMapper, ListingDetailMapper>();
 
-                    services.AddHostedService<HurriyetWorker>();
+                 //   services.AddHostedService<HurriyetWorker>();
                     services.AddHostedService<EmlakJetWorker>();
                 });
     }

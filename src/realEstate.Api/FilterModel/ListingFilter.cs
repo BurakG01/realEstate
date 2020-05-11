@@ -15,5 +15,6 @@ namespace realEstate.Api.FilterModel
         public string FurnitureType { get; set; } // Eşyalı, Boş or EmptyString=For All
         public string AdvertStatus { get; set; } // Kiralik - satilik or empty-string
         public int PageNumber { get; set; }
+        public string Query { get; set; }
     }
 }

@@ -6,24 +6,31 @@ using Microsoft.Extensions.DependencyInjection;
 using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
 using realEstate.Common.ExternalServices;
+using realEstate.Common.ParsingModel;
+using Town = realEstate.Common.Domain.Model.Town;
 
 namespace realEstate.Common.InternalServices
 {
     public interface IInternalLocationService
     {
         Task<List<City>> GetCities();
+        Task GetNeighborhoods();
+
     }
 
     public class InternalLocationService : IInternalLocationService
     {
         private readonly ILocationService _locationService;
         private readonly IServiceProvider _services;
+      
 
         public InternalLocationService(
-            ILocationService locationService, IServiceProvider services)
+            ILocationService locationService, IServiceProvider services
+           )
         {
             _locationService = locationService;
             _services = services;
+          
         }
 
         public async Task<List<City>> GetCities()
@@ -58,41 +65,41 @@ namespace realEstate.Common.InternalServices
                             Id = x.Id
 
                         }).OrderBy(x => x.Name).ToList();
-                        //foreach (var town in towns.TownList.OrderBy(x=>x.Name))
-                        //{
-                        //    var newTown = new Town
-                        //    {
-                        //        Name = town.Name,
-                        //        Id = town.Id,
-                        //        Districts = new List<District>()
-                        //    };
-                        //    var districts = await _locationService.GetDistricts(town.Id);
-
-                        //    foreach (var district in districts.DistrictList.OrderBy(x=>x.Name))
-                        //    {
-                        //        var newDistrict = new District()
-                        //        {
-                        //            Name = district.Name,
-                        //            Id = district.Id,
-                        //            Neighborhoods = new List<Neighborhood>()
-                        //        };
-                        //        var neighborhoods = await _locationService.GetNeighborhoods(district.Id);
-                        //        newDistrict.Neighborhoods = neighborhoods.NeighborhoodList.Select(x => new Neighborhood
-                        //        {
-                        //            Name = x.Name,
-                        //            Id = x.Id
-                        //        }).ToList();
-                        //        newTown.Districts.Add(newDistrict);
-                        //    }
-
-                        //    newCity.Towns.Add(newTown);
-                        //}
 
                         await locationRepository.AddAsync(newCity);
                         cityList.Add(newCity);
                     }
 
                     return cityList;
+                }
+            }
+
+        }
+
+        public async Task GetNeighborhoods()
+        {
+            using (var scope = _services.CreateScope())
+            {
+                var _neighborhoodRepository = scope.ServiceProvider.GetRequiredService<INeighborhoodRepository>();
+                var isExist = _neighborhoodRepository.GetByFilter(_ => true);
+                if (!isExist.Any())
+                {
+
+                    var neighborhoods = new List<NeighborhoodData>();
+                    var skip = 0;
+
+                    while (true)
+                    {
+                        var response = await _locationService.GetAllNeighborhoods(skip);
+                        if (response.NeighborhoodList.Count < 100)
+                        {
+                            break;
+                        }
+                        neighborhoods.AddRange(response.NeighborhoodList);
+                        skip++;
+                    }
+
+                    await _neighborhoodRepository.AddAsync(neighborhoods);
                 }
             }
 

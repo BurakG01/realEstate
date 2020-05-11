@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using realEstate.Api.FilterModel;
@@ -29,33 +31,13 @@ namespace realEstate.Api.Controllers
             _listingMapper = listingMapper;
         }
 
-        [HttpGet("get-top")]
-        public async Task<List<dynamic>> GetTopTenListing()
-        {
-            var listings = await _listingRepository
-                 .GetByFilter(x => !string.IsNullOrEmpty(x.AdvertId))
-                 .Take(10)
-                 .ToListAsync();
-            var listingRepresentation = listings.Select(x => _listingMapper.MapListing(x))
-                .GroupBy(x => x.ReSku).Select(x =>
-                    new
-                    {
-                        key = x.Key,
-                        owners = x.Select(y => new { ownerName = y.OwnerSite, Url = y.Url }).ToList(),
-                        Listing = x.First()
-                    }
-
-                ).ToList<dynamic>();
-
-
-            return listingRepresentation;
-
-        }
-
         [HttpPost("filterable")]
         public async Task<ListingsResponse> GetFilteredListing([FromBody] ListingFilter filter)
         {
-            var listings = _listingRepository.GetByFilter(x => !string.IsNullOrEmpty(x.AdvertId));
+
+                var listings = string.IsNullOrEmpty(filter.Query) ?
+                _listingRepository.GetByFilter(_ => true) :
+                GetFullTextSearch(filter.Query);
 
             if (!string.IsNullOrEmpty(filter.City))
             {
@@ -72,7 +54,7 @@ namespace realEstate.Api.Controllers
 
             if (filter.RoomNumber != null && filter.RoomNumber.Any())
             {
-                listings = listings.Where(x => filter.RoomNumber.Any(y => x.RoomNumber == y));
+                listings = listings.Where(x => filter.RoomNumber.Contains(x.RoomNumber));
             }
 
             if (!string.IsNullOrEmpty(filter.AdvertStatus))
@@ -108,9 +90,16 @@ namespace realEstate.Api.Controllers
                 ).ToList<dynamic>();
             return new ListingsResponse
             {
-                TotalPage =(int)totalPage,
+                TotalPage = (int)totalPage,
                 Listings = listingRepresentation
             };
+        }
+
+        private IMongoQueryable<Listing> GetFullTextSearch(string searchText)
+        {
+            var filterText = Builders<Listing>.Filter.Text(searchText);
+
+            return _listingRepository.GetByFilter(_ => filterText.Inject());
         }
 
     }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using realEstate.Common.ExternalServices;
 using realEstate.Common.Mapper;
 using realEstate.Common.Mongo;
 
@@ -29,6 +30,10 @@ namespace realEstate.Api
         {
             services.AddMongodb(Configuration);
             services.AddScoped<IListingRepresentationMapper, ListingRepresentationMapper>();
+            services.AddHttpClient<ILocationService, LocationService>(client =>
+            {
+                client.BaseAddress = new Uri("https://il-ilce-rest-api.herokuapp.com/v1/");
+            });
             services.AddControllers();
         }
 

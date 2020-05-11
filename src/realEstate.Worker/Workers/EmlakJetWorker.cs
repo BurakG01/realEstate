@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using realEstate.Common.Domain.Model;
 using realEstate.Common.Domain.Repositories;
 using realEstate.Common.Enums;
@@ -45,7 +46,9 @@ namespace realEstate.Worker.Workers
                 };
                 using (var scope = _services.CreateScope())
                 {
+                   
                     var listingRepository = scope.ServiceProvider.GetRequiredService<IListingRepository>();
+
                     var cities = await _internalLocationService.GetCities();
                     foreach (var city in cities)
                     {
@@ -153,7 +156,7 @@ namespace realEstate.Worker.Workers
                                         catch (Exception e)
                                         {
                                             Console.WriteLine(e);
-                                           
+
                                         }
 
 
@@ -162,7 +165,7 @@ namespace realEstate.Worker.Workers
                                 catch (Exception e)
                                 {
                                     Console.WriteLine(e);
-                                
+
                                 }
 
                             }

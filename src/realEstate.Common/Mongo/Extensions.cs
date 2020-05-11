@@ -28,6 +28,7 @@ namespace realEstate.Common.Mongo
             });
             services.AddScoped<IListingRepository, ListingRepository>();
             services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
 
         }
     }

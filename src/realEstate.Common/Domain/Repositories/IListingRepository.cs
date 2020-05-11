@@ -70,5 +70,8 @@ namespace realEstate.Common.Domain.Repositories
 
         private IMongoCollection<Listing> Collection
             => _database.GetCollection<Listing>("Listings");
+
+  
+
     }
 }
