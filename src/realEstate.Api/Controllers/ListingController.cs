@@ -72,7 +72,8 @@ namespace realEstate.Api.Controllers
                 listings = listings.Where(x => x.AdvertOwnerType == filter.AdvertOwnerType);
             }
 
-            var totalPage = Math.Ceiling((double)listings.Count() / 20);
+            var totalCount = listings.Count();
+           // var totalPage = Math.Ceiling((double)listings.Count() / 20);
 
             listings = listings.Skip(filter.PageNumber * 20).Take(20);
 
@@ -88,9 +89,9 @@ namespace realEstate.Api.Controllers
                     }
 
                 ).ToList<dynamic>();
-            return new ListingsResponse
+            return new ListingsResponse 
             {
-                TotalPage = (int)totalPage,
+                TotalCount = totalCount,
                 Listings = listingRepresentation
             };
         }

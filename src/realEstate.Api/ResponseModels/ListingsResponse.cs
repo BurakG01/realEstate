@@ -7,7 +7,7 @@ namespace realEstate.Api.ResponseModels
 {
     public class ListingsResponse
     {
-        public int TotalPage { get; set; }
+        public int TotalCount { get; set; }
         public  List<dynamic> Listings { get; set; }
     }
 }
