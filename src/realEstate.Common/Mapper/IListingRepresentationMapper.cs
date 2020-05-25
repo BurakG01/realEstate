@@ -44,7 +44,7 @@ namespace realEstate.Common.Mapper
 
                     .ForMember(dst => dst.Price,
                         opt =>
-                            opt.MapFrom(x => $"{x.Price.Price} {x.Price.Currency}"));
+                            opt.MapFrom(x => $"{x.Price.Price} "));
             });
             _mapper = config.CreateMapper();
         }
