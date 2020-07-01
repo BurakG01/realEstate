@@ -73,7 +73,6 @@ namespace realEstate.Api.Controllers
             }
 
             var totalCount = listings.Count();
-           // var totalPage = Math.Ceiling((double)listings.Count() / 20);
 
             listings = listings.Skip(filter.PageNumber * 20).Take(20);
 

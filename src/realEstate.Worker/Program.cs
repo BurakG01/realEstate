@@ -26,19 +26,25 @@ namespace realEstate.Worker
                     services.AddMongodb(hostContext.Configuration);
                     services.AddHttpClient<IHurriyetService, HurriyetService>(client =>
                         {
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml");
-                            // client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate");
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; EN; rv:11.0) like Gecko");
+                            client.DefaultRequestHeaders.
+                                TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
+                            client.DefaultRequestHeaders.
+                                TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml");
+                            client.DefaultRequestHeaders.
+                                TryAddWithoutValidation("User-Agent",
+                                "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; EN; rv:11.0) like Gecko");
                             client.BaseAddress = new Uri("https://www.hurriyetemlak.com/");
                         }
                         );
                     services.AddHttpClient<IEmlakJetService, EmlakJetService>(client =>
                         {
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml");
-                            // client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate");
-                            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; EN; rv:11.0) like Gecko");
+                            client.DefaultRequestHeaders.
+                                TryAddWithoutValidation("Accept-Charset", "ISO-8859-1");
+                            client.DefaultRequestHeaders.
+                                TryAddWithoutValidation("Accept", "text/html,application/xhtml+xml,application/xml");
+                            client.DefaultRequestHeaders.
+                            TryAddWithoutValidation("User-Agent",
+                                "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; EN; rv:11.0) like Gecko");
                             client.BaseAddress = new Uri("https://www.emlakjet.com/");
                         }
                     );
@@ -49,8 +55,9 @@ namespace realEstate.Worker
                     services.AddSingleton<IInternalLocationService, InternalLocationService>();
                     services.AddSingleton<IListingDetailMapper, ListingDetailMapper>();
 
-                 //   services.AddHostedService<HurriyetWorker>();
+                    services.AddHostedService<HurriyetWorker>();
                     services.AddHostedService<EmlakJetWorker>();
+                    services.AddHostedService<SimilarityWorker>();
                 });
     }
 }

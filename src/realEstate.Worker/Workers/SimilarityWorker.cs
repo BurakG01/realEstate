@@ -81,7 +81,7 @@ namespace realEstate.Worker.Workers
         private double GetSimilarity(string firstDescription, string secondDescription)
         {
             var jw = new JaroWinkler();
-
+ 
             return jw.Similarity(firstDescription,secondDescription);
         }
     }

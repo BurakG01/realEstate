@@ -16,8 +16,10 @@ namespace realEstate.Common.Domain.Repositories
     {
         Task UpsertRecord(Listing record);
         Task DeleteBulkAsync(List<ObjectId> ids);
+        Task UpdateMany(List<ObjectId> ids, string newSku);
         // todo : query icin bunu kullanalim. alttakini silelim
         IMongoQueryable<Listing> GetByFilter(Expression<Func<Listing, bool>> predicate);
+
 
         Task InsertListing(Listing listing);
         Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int owner);
@@ -53,6 +55,14 @@ namespace realEstate.Common.Domain.Repositories
             await Collection.DeleteManyAsync(idsFilter);
         }
 
+        public async Task UpdateMany(List<ObjectId> ids, string newSku)
+        {
+            var idsFilter = Builders<Listing>.Filter.In(d => d.Id, ids);
+            var updateOptions = Builders<Listing>.Update.Set(l => l.ReSku, newSku);
+            await Collection.UpdateManyAsync(idsFilter, updateOptions);
+
+        }
+
         public async Task<List<Listing>> GetListingsByFilter(string townId, string cityId, int owner)
         {
             var listings = await Collection
@@ -71,7 +81,7 @@ namespace realEstate.Common.Domain.Repositories
         private IMongoCollection<Listing> Collection
             => _database.GetCollection<Listing>("Listings");
 
-  
+
 
     }
 }
